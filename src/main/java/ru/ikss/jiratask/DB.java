@@ -9,7 +9,7 @@ public class DB {
 
     public static final String queryInsertDataSet5 = "select taskInsert(?, ?, ?, ?, ?, ?, ?, ?)";
     public static final String queryInsertDataSet10 = "select set10TaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    public static final String queryInsertDataCR = "select CRTaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    public static final String queryInsertDataCR = "select CRTaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     public static final String queryInsertWorklogCR = "select CRWorkLogInsert(?, ?, ?, ?)";
     public static final String queryGetTimeSet5 = "select getLastTaskDate()";
     public static final String queryGetTimeSet10 = "select set10GetLastTaskDate()";

@@ -67,17 +67,17 @@ public class JiraTask {
                     logger.error("Error on handle project {}", project, e);
                 }
             }
-             try (CallableStatement st = con.prepareCall(DB.queryRecalcData)) {
-             logger.trace("Start recalc");
-             st.execute();
-             }
+            try (CallableStatement st = con.prepareCall(DB.queryRecalcData)) {
+                logger.trace("Start recalc");
+                st.execute();
+            }
         } catch (Exception ex) {
             logger.error("Exception: " + ex.getCause() + " " + ex.getMessage());
         }
         logger.trace("All done");
     }
 
-    private static void handleProject(Connection con, JiraRestClient restClient, JiraTask.Projects project) throws SQLException {
+    private static void handleProject(Connection con, JiraRestClient restClient, Projects project) throws SQLException {
         logger.trace("Handle project {}", project);
         int startAt = 0;
         String jql = "";
@@ -117,7 +117,7 @@ public class JiraTask {
                     Issue issueTotal =
                             restClient.getIssueClient().getIssue(issue.getKey(), Collections.singletonList(Expandos.CHANGELOG)).claim();
                     String team = "";
-                    if (project == JiraTask.Projects.SET10) {
+                    if (project == Projects.SET10) {
                         User changelog = restClient.getUserClient().getUser(issueTotal.getAssignee().getName()).claim();
                         for (String cg : changelog.getGroups().getItems()) {
                             if (set10Teams.contains(cg.toLowerCase())) {
@@ -142,7 +142,7 @@ public class JiraTask {
                             }
                         }
                     }
-                    if (project == JiraTask.Projects.CR) {
+                    if (project == Projects.CR) {
                         insertWorklogCR(issueTotal, lastTime);
                         if (issueTotal.getCreationDate().compareTo(lastTime) > 0) {
                             insertCreateCR(st, issueTotal);
@@ -249,6 +249,24 @@ public class JiraTask {
             }
         }
 
+        String team = "";
+        IssueField teamField = issue.getField("customfield_12800");
+        if (teamField != null && teamField.getValue() != null) {
+            JSONArray teams = (JSONArray) teamField.getValue();
+
+            for (int i = 0; i < teams.length(); ++i) {
+                if (!team.isEmpty()) {
+                    team = team + ",";
+                }
+
+                try {
+                    team = team + (String) teams.get(i);
+                } catch (JSONException e) {
+                    logger.error("Can\'t get teams", e);
+                }
+            }
+        }
+
         st.setString(1, issue.getKey());
         st.setString(2, issue.getSummary());
         st.setString(3, issue.getIssueType().getName());
@@ -266,6 +284,7 @@ public class JiraTask {
         st.setString(15, pmInside);
         st.setString(16, issue.getReporter().getDisplayName());
         st.setTimestamp(17, new Timestamp(issue.getCreationDate().getMillis()));
+        st.setString(18, team);
         st.execute();
     }
 
@@ -309,6 +328,24 @@ public class JiraTask {
             }
         }
 
+        String team = "";
+        IssueField teamField = issue.getField("customfield_12800");
+        if (teamField != null && teamField.getValue() != null) {
+            JSONArray teams = (JSONArray) teamField.getValue();
+
+            for (int i = 0; i < teams.length(); ++i) {
+                if (!team.isEmpty()) {
+                    team = team + ",";
+                }
+
+                try {
+                    team = team + (String) teams.get(i);
+                } catch (JSONException e) {
+                    logger.error("Can\'t get teams", e);
+                }
+            }
+        }
+
         st.setString(1, issue.getKey());
         st.setString(2, issue.getSummary());
         st.setString(3, issue.getIssueType().getName());
@@ -326,6 +363,7 @@ public class JiraTask {
         st.setString(15, pmInside);
         st.setString(16, cg.getAuthor().getDisplayName());
         st.setTimestamp(17, new Timestamp(cg.getCreated().getMillis()));
+        st.setString(18, team);
         st.execute();
     }
 
