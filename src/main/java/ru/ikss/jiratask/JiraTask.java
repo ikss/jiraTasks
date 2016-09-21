@@ -72,7 +72,7 @@ public class JiraTask {
                 st.execute();
             }
         } catch (Exception ex) {
-            logger.error("Exception: " + ex.getCause() + " " + ex.getMessage());
+            logger.error("Exception", ex);
         }
         logger.trace("All done");
     }
@@ -119,10 +119,12 @@ public class JiraTask {
                     String team = "";
                     if (project == Projects.SET10) {
                         User changelog = restClient.getUserClient().getUser(issueTotal.getAssignee().getName()).claim();
-                        for (String cg : changelog.getGroups().getItems()) {
-                            if (set10Teams.contains(cg.toLowerCase())) {
-                                team = cg;
-                                break;
+                        if ((changelog != null) && (changelog.getGroups() != null) && (changelog.getGroups().getItems() != null)) {
+                            for (String cg : changelog.getGroups().getItems()) {
+                                if (set10Teams.contains(cg.toLowerCase())) {
+                                    team = cg;
+                                    break;
+                                }
                             }
                         }
                     }
