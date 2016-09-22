@@ -46,7 +46,7 @@ public class JiraTask {
     private static final Logger logger = LoggerFactory.getLogger(JiraTask.class);
     private static final int maxResults = 500;
     private static Properties props;
-    private static final List<String> set10Teams = Arrays.asList("setretaila", "setretailb", "setretaile");
+    private static final List<String> set10Teams = Arrays.asList("setretaila", "setretailb", "setretaile", "sco");
     private static final Set<String> fields =
             Stream.of("summary", "issuetype", "created", "updated", "project", "status", "key").collect(Collectors.toSet());
 
