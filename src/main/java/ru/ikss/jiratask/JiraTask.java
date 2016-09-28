@@ -57,11 +57,15 @@ public class JiraTask {
         }
         final URI jiraServerUri = URI.create("https://crystals.atlassian.net");
         final AsynchronousJiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
+        logger.trace("------ Started ------");
         try (Connection con = DB.getConnection(props);
                 JiraRestClient restClient =
                         factory.createWithBasicHttpAuthentication(jiraServerUri, props.getProperty("jira.login"), props.getProperty("jira.pwd"))) {
             for (Projects project : Projects.values()) {
+                logger.trace("Handle project {}", project);
                 handleProject(con, restClient, project);
+                logger.trace("End");
+                logger.trace("\n");
             }
             try (CallableStatement st = con.prepareCall(DB.queryRecalcData)) {
                 logger.trace("Start recalc");
@@ -70,11 +74,10 @@ public class JiraTask {
         } catch (Exception ex) {
             logger.error("Exception", ex);
         }
-        logger.trace("All done");
+        logger.trace("------ All done ------");
     }
 
     private static void handleProject(Connection con, JiraRestClient restClient, Projects project) throws SQLException {
-        logger.trace("Handle project {}", project);
         int startAt = 0;
         String jql = "";
         String query = "";
