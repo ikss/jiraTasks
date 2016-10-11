@@ -131,23 +131,27 @@ public class JiraTask {
                         }
                     }
                     for (ChangelogGroup cg : issueTotal.getChangelog()) {
-                        for (ChangelogItem ci : cg.getItems()) {
-                            if (ci.getField().equals("status") && cg.getCreated().compareTo(lastTime) > 0) {
-                                switch (project) {
-                                    case SET5:
-                                        insertStatusSet5(st, issueTotal, cg, ci);
-                                        break;
-                                    case SET10:
-                                        insertStatusSet10(st, issueTotal, cg, ci, team);
-                                        break;
-                                    case CR:
-                                        insertStatusCR(st, issueTotal, cg, ci);
+                        if (cg.getCreated().compareTo(lastTime) > 0) {
+                            for (ChangelogItem ci : cg.getItems()) {
+                                if (ci.getField().equals("status")) {
+                                    switch (project) {
+                                        case SET5:
+                                            insertStatusSet5(st, issueTotal, cg, ci);
+                                            break;
+                                        case SET10:
+                                            insertStatusSet10(st, issueTotal, cg, ci, team);
+                                            break;
+                                        case CR:
+                                            insertStatusCR(st, issueTotal, cg, ci);
+                                            break;
+                                    }
                                 }
                             }
                         }
                     }
                     if (project == Projects.CR) {
                         insertWorklogCR(issueTotal, lastTime);
+                        updateTaskCR(issueTotal);
                         if (issueTotal.getCreationDate().compareTo(lastTime) > 0) {
                             insertCreateCR(st, issueTotal);
                         }
@@ -159,6 +163,16 @@ public class JiraTask {
                             restClient.getSearchClient().searchJql(jql, maxResults, startAt, fields).claim();
                 }
             }
+        }
+    }
+
+    private static void updateTaskCR(Issue issue) throws SQLException {
+        try (Connection con = DB.getConnection(props); CallableStatement st = con.prepareCall(DB.queryUpdateDataCR)) {
+            st.setString(1, issue.getKey());
+            st.setString(2, issue.getStatus().getName());
+            st.setString(3, getFixVersion(issue));
+            logger.debug("query: '{}'", st.toString());
+            st.execute();
         }
     }
 
