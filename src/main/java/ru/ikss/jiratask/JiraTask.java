@@ -16,9 +16,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -228,172 +228,90 @@ public class JiraTask {
     }
 
     private static void insertCreateCR(CallableStatement st, Issue issue) throws SQLException {
-        String creator = "";
-        IssueField creatorField = issue.getField("creator");
-        if (creatorField != null && creatorField.getValue() != null) {
-            JSONObject project = (JSONObject) creatorField.getValue();
-            try {
-                creator = project.getString("displayName");
-            } catch (JSONException var14) {
-                logger.error("Can\'t get creator");
-            }
-        }
-
-        String pr = "";
-        IssueField projectField = issue.getField("customfield_12601");
-        if (projectField != null && projectField.getValue() != null) {
-            JSONArray projects = (JSONArray) projectField.getValue();
-
-            for (int i = 0; i < projects.length(); ++i) {
-                if (!pr.isEmpty()) {
-                    pr = pr + ",";
-                }
-
-                try {
-                    pr = pr + (String) projects.get(i);
-                } catch (JSONException e) {
-                    logger.error("Can\'t get project", e);
-                }
-            }
-        }
-
-        String pmInside = "";
-        IssueField pmInsideField = issue.getField("customfield_12606");
-        if (pmInsideField != null && pmInsideField.getValue() != null) {
-            try {
-                pmInside = ((JSONObject) pmInsideField.getValue()).getString("displayName");
-            } catch (JSONException var12) {
-                logger.error("Can\'t get pmInside", var12);
-            }
-        }
-
-        String team = "";
-        IssueField teamField = issue.getField("customfield_12800");
-        if (teamField != null && teamField.getValue() != null) {
-            JSONArray teams = (JSONArray) teamField.getValue();
-
-            for (int i = 0; i < teams.length(); ++i) {
-                if (!team.isEmpty()) {
-                    team = team + ",";
-                }
-
-                try {
-                    team = team + (String) teams.get(i);
-                } catch (JSONException e) {
-                    logger.error("Can\'t get teams", e);
-                }
-            }
-        }
-
         st.setString(1, issue.getKey());
         st.setString(2, issue.getSummary());
         st.setString(3, issue.getIssueType().getName());
         st.setString(4, null);
         st.setString(5, issue.getStatus().getName());
         st.setString(6, issue.getAssignee() == null ? null : issue.getAssignee().getDisplayName());
-        st.setString(7, creator);
+        st.setString(7, getValueFromFieldByKey(issue, "creator", "displayName"));
         st.setTimestamp(8, new Timestamp(issue.getCreationDate().getMillis()));
         st.setString(9, getFixVersion(issue));
-        st.setInt(10, getIntFromField(issue, "aggregatetimeoriginalestimate").intValue());
+        st.setInt(10, getIntFromField(issue, "aggregatetimeoriginalestimate"));
         st.setInt(11, getIntFromField(issue, "aggregatetimespent").intValue());
         st.setInt(12, getDoubleFromField(issue, "customfield_12701").intValue());
         st.setInt(13, getDoubleFromField(issue, "customfield_12702").intValue());
-        st.setString(14, pr);
-        st.setString(15, pmInside);
+        st.setString(14, getStringFromFieldArray(issue, "customfield_12601", ","));
+        st.setString(15, getValueFromFieldByKey(issue, "customfield_12606", "displayName"));
         st.setString(16, issue.getReporter().getDisplayName());
         st.setTimestamp(17, new Timestamp(issue.getCreationDate().getMillis()));
-        st.setString(18, team);
+        st.setString(18, getStringFromFieldArray(issue, "customfield_12800", ","));
         logger.debug("query: '{}'", st.toString());
         st.execute();
     }
 
+    private static String getValueFromFieldByKey(Issue issue, String fieldName, String key) {
+        try {
+            IssueField field = issue.getField(fieldName);
+            if (field != null && field.getValue() != null) {
+                JSONObject value = (JSONObject) field.getValue();
+                return value.getString(key);
+            }
+        } catch (Exception e) {
+            logger.error("Can\'t get {}", fieldName, e);
+        }
+        return "";
+    }
+
     private static void insertStatusCR(CallableStatement st, Issue issue, ChangelogGroup cg, ChangelogItem ci) throws SQLException {
-        String creator = "";
-        IssueField creatorField = issue.getField("creator");
-        if (creatorField != null && creatorField.getValue() != null) {
-            JSONObject project = (JSONObject) creatorField.getValue();
-            try {
-                creator = project.getString("displayName");
-            } catch (JSONException var14) {
-                logger.error("Can\'t get creator");
-            }
-        }
-
-        String pr = "";
-        IssueField projectField = issue.getField("customfield_12601");
-        if (projectField != null && projectField.getValue() != null) {
-            JSONArray projects = (JSONArray) projectField.getValue();
-
-            for (int i = 0; i < projects.length(); ++i) {
-                if (!pr.isEmpty()) {
-                    pr = pr + ",";
-                }
-
-                try {
-                    pr = pr + (String) projects.get(i);
-                } catch (JSONException e) {
-                    logger.error("Can\'t get project", e);
-                }
-            }
-        }
-
-        String pmInside = "";
-        IssueField pmInsideField = issue.getField("customfield_12606");
-        if (pmInsideField != null && pmInsideField.getValue() != null) {
-            try {
-                pmInside = ((JSONObject) pmInsideField.getValue()).getString("displayName");
-            } catch (JSONException var12) {
-                logger.error("Can\'t get pmInside", var12);
-            }
-        }
-
-        String team = "";
-        IssueField teamField = issue.getField("customfield_12800");
-        if (teamField != null && teamField.getValue() != null) {
-            JSONArray teams = (JSONArray) teamField.getValue();
-
-            for (int i = 0; i < teams.length(); ++i) {
-                if (!team.isEmpty()) {
-                    team = team + ",";
-                }
-
-                try {
-                    team = team + (String) teams.get(i);
-                } catch (JSONException e) {
-                    logger.error("Can\'t get teams", e);
-                }
-            }
-        }
-
         st.setString(1, issue.getKey());
         st.setString(2, issue.getSummary());
         st.setString(3, issue.getIssueType().getName());
         st.setString(4, ci.getFromString());
         st.setString(5, ci.getToString());
         st.setString(6, issue.getAssignee() == null ? null : issue.getAssignee().getDisplayName());
-        st.setString(7, creator);
+        st.setString(7, getValueFromFieldByKey(issue, "creator", "displayName"));
         st.setTimestamp(8, new Timestamp(issue.getCreationDate().getMillis()));
         st.setString(9, getFixVersion(issue));
         st.setInt(10, getIntFromField(issue, "aggregatetimeoriginalestimate").intValue());
         st.setInt(11, getIntFromField(issue, "aggregatetimespent").intValue());
         st.setInt(12, getDoubleFromField(issue, "customfield_12701").intValue());
         st.setInt(13, getDoubleFromField(issue, "customfield_12702").intValue());
-        st.setString(14, pr);
-        st.setString(15, pmInside);
+        st.setString(14, getStringFromFieldArray(issue, "customfield_12601", ","));
+        st.setString(15, getValueFromFieldByKey(issue, "customfield_12606", "displayName"));
         st.setString(16, cg.getAuthor().getDisplayName());
         st.setTimestamp(17, new Timestamp(cg.getCreated().getMillis()));
-        st.setString(18, team);
+        st.setString(18, getStringFromFieldArray(issue, "customfield_12800", ","));
         logger.debug("query: '{}'", st.toString());
         st.execute();
     }
 
+    private static String getStringFromFieldArray(Issue issue, String fieldName, String delimeter) {
+        String result = "";
+        try {
+            IssueField field = issue.getField(fieldName);
+            if (field != null && field.getValue() != null) {
+                JSONArray value = (JSONArray) field.getValue();
+                for (int i = 0; i < value.length(); ++i) {
+                    if (!result.isEmpty()) {
+                        result = result + ",";
+                    }
+                    result = result + (String) value.get(i);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Can\'t get {}", fieldName, e);
+        }
+        return result;
+    }
+
     private static String getFixVersion(Issue issue) {
         String result = "";
-        for (Version version : issue.getFixVersions()) {
-            if (!result.isEmpty()) {
-                result += ",";
-            }
-            result = result + version.getName();
+        Iterable<Version> iterator = issue.getFixVersions();
+        if (iterator != null) {
+            result = StreamSupport.stream(iterator.spliterator(), false)
+                .map(Version::getName)
+                .collect(Collectors.joining(","));
         }
         return result;
     }
@@ -404,7 +322,6 @@ public class JiraTask {
         if (field != null && field.getValue() != null) {
             result = (Integer) field.getValue();
         }
-
         return result;
     }
 
@@ -414,7 +331,6 @@ public class JiraTask {
         if (field != null && field.getValue() != null) {
             result = (Double) field.getValue();
         }
-
         return result;
     }
 
