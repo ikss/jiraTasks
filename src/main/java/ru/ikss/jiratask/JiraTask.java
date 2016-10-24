@@ -8,12 +8,15 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -46,21 +49,28 @@ public class JiraTask {
     private static final Logger logger = LoggerFactory.getLogger(JiraTask.class);
     private static final int maxResults = 500;
     private static Properties props;
-    private static final List<String> set10Teams = Arrays.asList("setretaila", "setretailb", "setretaile", "sco");
     private static final Set<String> fields =
             Stream.of("summary", "issuetype", "created", "updated", "project", "status", "key").collect(Collectors.toSet());
+    private static final URI JIRA_SERVER_URI = URI.create("https://crystals.atlassian.net");
+    private static final AsynchronousJiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
 
     public static void main(String[] args) throws IOException {
         props = new Properties();
         try (FileReader reader = new FileReader(new File("config/config.conf"))) {
             props.load(reader);
         }
-        final URI jiraServerUri = URI.create("https://crystals.atlassian.net");
-        final AsynchronousJiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
-        logger.trace("------ Started ------");
+        Integer delay = Integer.valueOf(props.getProperty("delay", "60"));
+        logger.trace("------ Work started ------");
+        logger.debug("Execute with delay = {}", delay);
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        executor.scheduleWithFixedDelay(JiraTask::handleProjects, 0, delay, TimeUnit.MINUTES);
+    }
+
+    private static void handleProjects() {
+        logger.trace("------ Start handling project ------");
         try (Connection con = DB.getConnection(props);
                 JiraRestClient restClient =
-                        factory.createWithBasicHttpAuthentication(jiraServerUri, props.getProperty("jira.login"), props.getProperty("jira.pwd"))) {
+                        factory.createWithBasicHttpAuthentication(JIRA_SERVER_URI, props.getProperty("jira.login"), props.getProperty("jira.pwd"))) {
             for (Projects project : Projects.values()) {
                 logger.trace("Handle project {}", project);
                 handleProject(con, restClient, project);
@@ -74,7 +84,7 @@ public class JiraTask {
         } catch (Exception ex) {
             logger.error("Exception", ex);
         }
-        logger.trace("------ All done ------");
+        logger.trace("------ All projects handled ------");
     }
 
     private static void handleProject(Connection con, JiraRestClient restClient, Projects project) throws SQLException {
@@ -82,6 +92,9 @@ public class JiraTask {
         String jql = "";
         String query = "";
         DateTime lastTime;
+        List<String> set10Teams = Stream.of(props.getProperty("jira.set10Teams").split(","))
+            .peek(String::trim)
+            .collect(Collectors.toList());
         switch (project) {
             case SET5:
                 lastTime = getLastTime(con, DB.queryGetTimeSet5);
@@ -101,7 +114,6 @@ public class JiraTask {
             default:
                 return;
         }
-
         jql = jql.replace("%dbUpdateTime%", "\'" + lastTime.toString(DateTimeFormat.forPattern("yyyy/MM/dd HH:mm")) + "\'");
         logger.trace("JIRA query: " + jql);
         SearchResult searchJqlPromise = restClient.getSearchClient().searchJql(jql, maxResults, startAt, fields).claim();
@@ -193,7 +205,7 @@ public class JiraTask {
 
     private static DateTime getLastTime(Connection con, String query) throws SQLException {
         DateTime lastTime = new DateTime(0);
-        try (CallableStatement st = con.prepareCall(query); ResultSet rs = st.executeQuery()) {
+        try (Statement st = con.createStatement(); ResultSet rs = st.executeQuery(query)) {
             if (rs.next())
                 lastTime = new DateTime(rs.getTimestamp(1));
         }
