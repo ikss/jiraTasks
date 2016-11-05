@@ -23,6 +23,17 @@ repositories {
     }
 }
 
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java/'
+        }
+        resources {
+            srcDir 'config/' 
+        }
+    }
+}
+
 dependencies {
     compile 'org.postgresql:postgresql:9.4-1206-jdbc42'
     compile 'ch.qos.logback:logback-classic:1.+'

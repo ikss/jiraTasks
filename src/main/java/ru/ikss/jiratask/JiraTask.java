@@ -10,10 +10,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -39,7 +39,6 @@ import com.atlassian.jira.rest.client.api.domain.User;
 import com.atlassian.jira.rest.client.api.domain.Version;
 import com.atlassian.jira.rest.client.api.domain.Worklog;
 import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
-import com.google.common.collect.Iterables;
 
 public class JiraTask {
 
@@ -47,12 +46,9 @@ public class JiraTask {
         SET5, SET10, CR;
     }
     private static final Logger logger = LoggerFactory.getLogger(JiraTask.class);
-    private static final int maxResults = 500;
-    private static Properties props;
-    private static final Set<String> fields =
-            Stream.of("summary", "issuetype", "created", "updated", "project", "status", "key").collect(Collectors.toSet());
-    private static final URI JIRA_SERVER_URI = URI.create("https://crystals.atlassian.net");
+    private static final URI SERVER_URI = URI.create("https://crystals.atlassian.net");
     private static final AsynchronousJiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
+    private static Properties props;
 
     public static void main(String[] args) throws IOException {
         props = new Properties();
@@ -67,28 +63,29 @@ public class JiraTask {
     }
 
     private static void handleProjects() {
-        logger.trace("------ Start handling project ------");
+        logger.trace("------ Start handling projects ------");
         try (Connection con = DB.getConnection(props);
-                JiraRestClient restClient =
-                        factory.createWithBasicHttpAuthentication(JIRA_SERVER_URI, props.getProperty("jira.login"), props.getProperty("jira.pwd"))) {
+                JiraRestClient client =
+                        factory.createWithBasicHttpAuthentication(SERVER_URI, props.getProperty("jira.login"), props.getProperty("jira.pwd"))) {
             for (Projects project : Projects.values()) {
-                logger.trace("Handle project {}", project);
-                handleProject(con, restClient, project);
-                logger.trace("End");
-                logger.trace("\n");
+                handleProject(con, client, project);
             }
-            try (CallableStatement st = con.prepareCall(DB.queryRecalcData)) {
-                logger.trace("Start recalc");
-                st.execute();
-            }
+            recalcData(con);
         } catch (Exception ex) {
             logger.error("Exception", ex);
         }
         logger.trace("------ All projects handled ------");
     }
 
-    private static void handleProject(Connection con, JiraRestClient restClient, Projects project) throws SQLException {
-        int startAt = 0;
+    private static void recalcData(Connection con) throws SQLException {
+        try (Statement st = con.createStatement()) {
+            logger.trace("Start recalc");
+            st.execute(DB.queryRecalcData);
+        }
+    }
+
+    private static void handleProject(Connection con, JiraRestClient client, Projects project) throws SQLException {
+        logger.trace("Handle project {}", project);
         String jql = "";
         String query = "";
         DateTime lastTime;
@@ -116,66 +113,62 @@ public class JiraTask {
         }
         jql = jql.replace("%dbUpdateTime%", "\'" + lastTime.toString(DateTimeFormat.forPattern("yyyy/MM/dd HH:mm")) + "\'");
         logger.trace("JIRA query: " + jql);
-        SearchResult searchJqlPromise = restClient.getSearchClient().searchJql(jql, maxResults, startAt, fields).claim();
-        logger.trace("Total {} works: {}", project, Integer.valueOf(searchJqlPromise.getTotal()));
         try (CallableStatement st = con.prepareCall(query)) {
-            boolean hasData = true;
-            while (hasData) {
-                hasData = false;
-                for (Issue issue : searchJqlPromise.getIssues()) {
-                    hasData = true;
-                    logger.trace(issue.getKey() + "\t" + issue.getStatus().getName());
-                    Issue issueTotal =
-                            restClient.getIssueClient().getIssue(issue.getKey(), Collections.singletonList(Expandos.CHANGELOG)).claim();
-                    String team = "";
-                    if (project == Projects.SET10) {
-                        User assignee = issueTotal.getAssignee();
-                        if (assignee != null) {
-                            User changelog = restClient.getUserClient().getUser(assignee.getName()).claim();
-                            if ((changelog != null) && (changelog.getGroups() != null) && (changelog.getGroups().getItems() != null)) {
-                                for (String cg : changelog.getGroups().getItems()) {
-                                    if (set10Teams.contains(cg.toLowerCase())) {
-                                        team = cg;
-                                        break;
-                                    }
+            for (String key : getAllWorks(client, jql)) {
+                Issue issue = client.getIssueClient().getIssue(key, Collections.singletonList(Expandos.CHANGELOG)).claim();
+                logger.trace(issue.getKey() + "\t" + issue.getStatus().getName());
+                String team = "";
+                if (project == Projects.SET10) {
+                    User assignee = issue.getAssignee();
+                    if (assignee != null) {
+                        User changelog = client.getUserClient().getUser(assignee.getName()).claim();
+                        if ((changelog != null) && (changelog.getGroups() != null) && (changelog.getGroups().getItems() != null)) {
+                            for (String cg : changelog.getGroups().getItems()) {
+                                if (set10Teams.contains(cg.toLowerCase())) {
+                                    team = cg;
+                                    break;
                                 }
                             }
-                        }
-                    }
-                    for (ChangelogGroup cg : issueTotal.getChangelog()) {
-                        if (cg.getCreated().compareTo(lastTime) > 0) {
-                            for (ChangelogItem ci : cg.getItems()) {
-                                if (ci.getField().equals("status")) {
-                                    switch (project) {
-                                        case SET5:
-                                            insertStatusSet5(st, issueTotal, cg, ci);
-                                            break;
-                                        case SET10:
-                                            insertStatusSet10(st, issueTotal, cg, ci, team);
-                                            break;
-                                        case CR:
-                                            insertStatusCR(st, issueTotal, cg, ci);
-                                            break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (project == Projects.CR) {
-                        insertWorklogCR(issueTotal, lastTime);
-                        updateTaskCR(issueTotal);
-                        if (issueTotal.getCreationDate().compareTo(lastTime) > 0) {
-                            insertCreateCR(st, issueTotal);
                         }
                     }
                 }
-                if (hasData) {
-                    startAt += Iterables.size(searchJqlPromise.getIssues());
-                    searchJqlPromise =
-                            restClient.getSearchClient().searchJql(jql, maxResults, startAt, fields).claim();
+                for (ChangelogGroup cg : issue.getChangelog()) {
+                    if (cg.getCreated().compareTo(lastTime) > 0) {
+                        for (ChangelogItem ci : cg.getItems()) {
+                            if (ci.getField().equals("status")) {
+                                switch (project) {
+                                    case SET5:
+                                        insertStatusSet5(st, issue, cg, ci);
+                                        break;
+                                    case SET10:
+                                        insertStatusSet10(st, issue, cg, ci, team);
+                                        break;
+                                    case CR:
+                                        insertStatusCR(st, issue, cg, ci);
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (project == Projects.CR) {
+                    insertWorklogCR(issue, lastTime);
+                    updateTaskCR(issue);
+                    if (issue.getCreationDate().compareTo(lastTime) > 0) {
+                        insertCreateCR(st, issue);
+                    }
                 }
             }
         }
+        logger.trace("End\n");
+    }
+
+    private static List<String> getAllWorks(JiraRestClient client, String jql) {
+        List<String> result = new ArrayList<>();
+        SearchResult searchResult = client.getSearchClient().searchJql(jql).claim();
+        logger.trace("Total works: {}", searchResult.getTotal());
+        searchResult.getIssues().forEach(i -> result.add(i.getKey()));
+        return result;
     }
 
     private static void updateTaskCR(Issue issue) throws SQLException {
