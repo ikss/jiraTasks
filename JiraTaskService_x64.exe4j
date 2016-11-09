@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<exe4j version="5.0" transformSequenceNumber="2">
+  <directoryPresets config="C:/Users/s.kuznetsov/Desktop/JiraTaskService" />
+  <application name="JiraTaskService" distributionSourceDir="C:/Users/s.kuznetsov/Desktop/JiraTaskService">
+    <languages>
+      <principalLanguage id="en" customLocalizationFile="" />
+    </languages>
+  </application>
+  <executable name="JiraTaskService_x64" type="2" iconSet="false" iconFile="" executableDir="." redirectStderr="false" stderrFile="log/error.log" stderrMode="append" redirectStdout="false" stdoutFile="log/output.log" stdoutMode="append" failOnStderrOutput="true" executableMode="3" changeWorkingDirectory="true" workingDirectory="." singleInstance="true" serviceStartType="2" serviceDependencies="" serviceDescription="Сервис обработки данных Jira" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="false" globalSingleInstance="false" singleInstanceActivate="true" dpiAware="false" amd64="true">
+    <messageSet />
+    <versionInfo include="false" fileVersion="" fileDescription="" legalCopyright="" internalName="" productName="" companyName="" productVersion="" />
+  </executable>
+  <splashScreen show="false" width="0" height="0" bitmapFile="" windowsNative="false" textOverlay="false">
+    <text>
+      <statusLine x="20" y="20" text="" fontSize="8" fontColor="0,0,0" bold="false" />
+      <versionLine x="20" y="40" text="version %VERSION%" fontSize="8" fontColor="0,0,0" bold="false" />
+    </text>
+  </splashScreen>
+  <java mainClass="ru.ikss.jiratask.JiraTask" vmParameters="" arguments="" allowVMPassthroughParameters="true" preferredVM="" bundleRuntime="true" minVersion="1.8" maxVersion="" allowBetaVM="true" jdkOnly="false">
+    <searchSequence>
+      <registry />
+      <envVar name="JAVA_HOME" />
+      <envVar name="JDK_HOME" />
+    </searchSequence>
+    <classPath>
+      <archive location="JiraTaskService.jar" failOnError="false" />
+    </classPath>
+    <nativeLibraryDirectories>
+      <directory name="." />
+    </nativeLibraryDirectories>
+  </java>
+  <includedFiles />
+  <unextractableFiles />
+</exe4j>
