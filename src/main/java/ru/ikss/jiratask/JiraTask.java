@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ru.ikss.jiratask.project.COPProject;
 import ru.ikss.jiratask.project.CRProject;
 import ru.ikss.jiratask.project.Project;
 import ru.ikss.jiratask.project.Set10Project;
@@ -28,6 +29,7 @@ public class JiraTask {
         projects.add(new Set5Project());
         projects.add(new Set10Project());
         projects.add(new CRProject());
+        projects.add(new COPProject());
         executor.scheduleWithFixedDelay(JiraTask::handleProjects, 0, delay, TimeUnit.MINUTES);
     }
 

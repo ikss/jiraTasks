@@ -1,0 +1,31 @@
+/bin/
+*.class
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+#*.jar
+build/*.jar
+*.war
+*.ear
+*.zip
+*.log
+*.exe
+
+
+logs/
+New folder/
+bin/
+data/
+classes/
+
+### Gradle ###
+.gradle
+build/
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <exe4j version="5.0" transformSequenceNumber="2">
-  <directoryPresets config="C:/Users/s.kuznetsov/Desktop/JiraTaskService" />
-  <application name="JiraTaskService" distributionSourceDir="C:/Users/s.kuznetsov/Desktop/JiraTaskService">
+  <directoryPresets config="C:/SetPrismaProxy" />
+  <application name="JiraTaskService" distributionSourceDir="D:/_ReadOnly/_UTILS/JiraTaskService">
     <languages>
       <principalLanguage id="en" customLocalizationFile="" />
     </languages>
@@ -23,7 +23,7 @@
       <envVar name="JDK_HOME" />
     </searchSequence>
     <classPath>
-      <archive location="JiraTaskService.jar" failOnError="false" />
+      <archive location="C:/SetPrismaProxy/JiraTaskService.jar" failOnError="false" />
     </classPath>
     <nativeLibraryDirectories>
       <directory name="." />
