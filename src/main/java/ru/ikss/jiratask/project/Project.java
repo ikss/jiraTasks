@@ -20,8 +20,8 @@ public abstract class Project {
 
     private static final Logger log = LoggerFactory.getLogger(Project.class);
     private static final int MAX_RESULTS = 500;
-    private static final Set<String> fields =
-            Stream.of("summary", "issuetype", "created", "updated", "project", "status", "key").collect(Collectors.toSet());
+    private static final Set<String> fields = Stream.of("summary", "issuetype", "created", "updated", "project", "status", "key")
+        .collect(Collectors.toSet());
 
     public abstract void handleTasks();
 
@@ -36,6 +36,7 @@ public abstract class Project {
         int startAt = 0;
         boolean hasData = false;
         do {
+            hasData = false;
             SearchResult searchResult = client.getSearchClient().searchJql(query, MAX_RESULTS, startAt, fields).claim();
             for (Issue issue : searchResult.getIssues()) {
                 hasData = true;
