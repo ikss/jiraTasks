@@ -19,6 +19,8 @@ import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.api.domain.ChangelogGroup;
 import com.atlassian.jira.rest.client.api.domain.ChangelogItem;
 import com.atlassian.jira.rest.client.api.domain.Issue;
+import com.atlassian.jira.rest.client.api.domain.IssueLink;
+import com.atlassian.jira.rest.client.api.domain.IssueLinkType;
 import com.atlassian.jira.rest.client.api.domain.User;
 
 import ru.ikss.jiratask.Config;
@@ -29,7 +31,7 @@ import ru.ikss.jiratask.jira.JiraClient;
 public class Set10Project extends Project {
 
     private static final Logger log = LoggerFactory.getLogger(Set10Project.class);
-    private static final String INSERT_DATA = "select set10TaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String INSERT_DATA = "select set10TaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String GET_TIME = "select set10GetLastTaskDate()";
     private static final String JQL = Config.getInstance().getValue("jira.jqlSet10");
     private static final List<String> TEAMS = Arrays.asList("setretaila", "setretailb", "setretaile", "sco");
@@ -60,11 +62,18 @@ public class Set10Project extends Project {
                         }
                     }
                 }
+                String caused = "";
+                for (IssueLink link : issue.getIssueLinks()) {
+                    if (link.getIssueLinkType() != null && IssueLinkType.Direction.INBOUND == link.getIssueLinkType().getDirection() &&
+                        "is caused by".equalsIgnoreCase(link.getIssueLinkType().getDescription())) {
+                        caused = link.getTargetIssueKey();
+                    }
+                }
                 for (ChangelogGroup cg : issue.getChangelog()) {
                     if (cg.getCreated().compareTo(lastTime) > 0) {
                         for (ChangelogItem ci : cg.getItems()) {
                             if (ci.getField().equals("status")) {
-                                insertStatus(st, issue, cg, ci, team);
+                                insertStatus(st, issue, cg, ci, team, caused);
                             }
                         }
                     }
@@ -77,7 +86,8 @@ public class Set10Project extends Project {
         log.trace("End\n");
     }
 
-    private static void insertStatus(CallableStatement st, Issue issue, ChangelogGroup cg, ChangelogItem ci, String team) throws SQLException {
+    private static void insertStatus(CallableStatement st, Issue issue, ChangelogGroup cg, ChangelogItem ci, String team, String caused)
+        throws SQLException {
         st.setString(1, issue.getKey());
         st.setString(2, issue.getIssueType().getName());
         st.setTimestamp(3, new Timestamp(cg.getCreated().getMillis()));
@@ -87,6 +97,7 @@ public class Set10Project extends Project {
         st.setInt(7, IssueHelper.getIntFromField(issue, "aggregatetimeoriginalestimate"));
         st.setInt(8, IssueHelper.getIntFromField(issue, "aggregatetimespent"));
         st.setString(9, IssueHelper.getFixVersions(issue));
+        st.setString(10, caused);
         log.debug("query: '{}'", st.toString());
         st.execute();
     }

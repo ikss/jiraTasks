@@ -20,7 +20,7 @@ public abstract class Project {
 
     private static final Logger log = LoggerFactory.getLogger(Project.class);
     private static final int MAX_RESULTS = 500;
-    private static final Set<String> fields = Stream.of("summary", "issuetype", "created", "updated", "project", "status", "key")
+    private static final Set<String> fields = Stream.of("summary", "issuetype", "created", "updated", "project", "status", "key", "issueLinks")
         .collect(Collectors.toSet());
 
     public abstract void handleTasks();
