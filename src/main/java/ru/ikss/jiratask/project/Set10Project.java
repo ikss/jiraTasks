@@ -22,6 +22,7 @@ import com.atlassian.jira.rest.client.api.domain.Issue;
 import com.atlassian.jira.rest.client.api.domain.IssueLink;
 import com.atlassian.jira.rest.client.api.domain.IssueLinkType;
 import com.atlassian.jira.rest.client.api.domain.User;
+import com.atlassian.jira.rest.client.api.domain.Worklog;
 
 import ru.ikss.jiratask.Config;
 import ru.ikss.jiratask.DAO;
@@ -32,6 +33,7 @@ public class Set10Project extends Project {
 
     private static final Logger log = LoggerFactory.getLogger(Set10Project.class);
     private static final String INSERT_DATA = "select set10TaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String INSERT_WORKLOG = "select set10WorkLogInsert(?, ?, ?, ?)";
     private static final String GET_TIME = "select set10GetLastTaskDate()";
     private static final String JQL = Config.getInstance().getValue("jira.jqlSet10");
     private static final List<String> TEAMS = Arrays.asList("setretaila", "setretailb", "setretaile", "sco");
@@ -44,7 +46,8 @@ public class Set10Project extends Project {
         log.trace("JIRA query: " + jql);
         try (JiraRestClient client = JiraClient.getInstance().getClient();
                 Connection con = DAO.I.getConnection();
-                CallableStatement st = con.prepareCall(INSERT_DATA)) {
+                CallableStatement st = con.prepareCall(INSERT_DATA);
+                CallableStatement worklogStatement = con.prepareCall(INSERT_WORKLOG)) {
             for (String key : getAllTasks(client, jql)) {
                 Issue issue = client.getIssueClient().getIssue(key, Collections.singletonList(Expandos.CHANGELOG)).claim();
                 log.trace(issue.getKey() + "\t" + issue.getStatus().getName());
@@ -79,6 +82,7 @@ public class Set10Project extends Project {
                     }
                 }
 
+                insertWorklog(worklogStatement, issue, lastTime);
             }
         } catch (SQLException | IOException e) {
             log.error("Error on handling project", e);
@@ -100,6 +104,19 @@ public class Set10Project extends Project {
         st.setString(10, caused);
         log.debug("query: '{}'", st.toString());
         st.execute();
+    }
+
+    private static void insertWorklog(CallableStatement st, Issue issue, DateTime lasttime) throws SQLException {
+        for (Worklog wl : issue.getWorklogs()) {
+            if (wl.getUpdateDate().compareTo(lasttime) > 0) {
+                st.setString(1, issue.getKey());
+                st.setString(2, wl.getUpdateAuthor().getDisplayName());
+                st.setInt(3, wl.getMinutesSpent());
+                st.setTimestamp(4, new Timestamp(wl.getUpdateDate().getMillis()));
+                log.debug("query: '{}'", st.toString());
+                st.execute();
+            }
+        }
     }
 
     @Override
