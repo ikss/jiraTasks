@@ -51,7 +51,6 @@ public class COPProject extends Project {
                         }
                     }
                 }
-
             }
         } catch (SQLException | IOException e) {
             log.error("Error on handling project", e);

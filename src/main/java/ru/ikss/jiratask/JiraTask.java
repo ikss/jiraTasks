@@ -35,7 +35,13 @@ public class JiraTask {
 
     private static void handleProjects() {
         log.trace("------ Start handling projects ------");
-        projects.forEach(p -> p.handleTasks());
+        for (Project project : projects) {
+            try {
+                project.handleTasks();
+            } catch (Throwable e) {
+                log.error(project.getClass().getSimpleName() + " error: " + e.getMessage(), e);
+            }
+        }
         DAO.I.recalcData();
         log.trace("------ All projects handled ------");
     }
