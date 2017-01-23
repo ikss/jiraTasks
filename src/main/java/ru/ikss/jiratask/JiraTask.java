@@ -14,6 +14,7 @@ import ru.ikss.jiratask.project.CRProject;
 import ru.ikss.jiratask.project.Project;
 import ru.ikss.jiratask.project.Set10Project;
 import ru.ikss.jiratask.project.Set5Project;
+import ru.ikss.jiratask.project.UXProject;
 
 public class JiraTask {
 
@@ -30,6 +31,7 @@ public class JiraTask {
         projects.add(new Set10Project());
         projects.add(new CRProject());
         projects.add(new COPProject());
+        projects.add(new UXProject());
         executor.scheduleWithFixedDelay(JiraTask::handleProjects, 0, delay, TimeUnit.MINUTES);
     }
 
