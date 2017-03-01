@@ -11,9 +11,12 @@ import org.slf4j.LoggerFactory;
 
 import ru.ikss.jiratask.project.COPProject;
 import ru.ikss.jiratask.project.CRProject;
+import ru.ikss.jiratask.project.LSNProject;
 import ru.ikss.jiratask.project.Project;
+import ru.ikss.jiratask.project.SRXProject;
 import ru.ikss.jiratask.project.Set10Project;
 import ru.ikss.jiratask.project.Set5Project;
+import ru.ikss.jiratask.project.TOUCHProject;
 import ru.ikss.jiratask.project.UXProject;
 
 public class JiraTask {
@@ -32,6 +35,9 @@ public class JiraTask {
         projects.add(new CRProject());
         projects.add(new COPProject());
         projects.add(new UXProject());
+        projects.add(new SRXProject());
+        projects.add(new TOUCHProject());
+        projects.add(new LSNProject());
         executor.scheduleWithFixedDelay(JiraTask::handleProjects, 0, delay, TimeUnit.MINUTES);
     }
 
