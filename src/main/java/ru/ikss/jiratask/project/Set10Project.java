@@ -32,7 +32,7 @@ import ru.ikss.jiratask.jira.JiraClient;
 public class Set10Project extends Project {
 
     private static final Logger log = LoggerFactory.getLogger(Set10Project.class);
-    private static final String INSERT_DATA = "select set10TaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String INSERT_DATA = "select set10TaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String INSERT_WORKLOG = "select set10WorkLogInsert(?, ?, ?, ?)";
     private static final String GET_TIME = "select set10GetLastTaskDate()";
     private static final String JQL = Config.getInstance().getValue("jira.jqlSet10");
@@ -104,6 +104,7 @@ public class Set10Project extends Project {
         st.setString(10, caused);
         st.setString(11, IssueHelper.getValueFromFieldByKey(issue, "parent", "key"));
         st.setString(12, IssueHelper.getValueFromFieldByKey(issue, "creator", "displayName"));
+        st.setString(13, issue.getPriority().getName());
         log.debug("query: '{}'", st.toString());
         st.execute();
     }

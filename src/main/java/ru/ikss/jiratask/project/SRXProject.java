@@ -26,7 +26,7 @@ import ru.ikss.jiratask.jira.JiraClient;
 public class SRXProject extends Project {
 
     private static final Logger log = LoggerFactory.getLogger(SRXProject.class);
-    private static final String INSERT_DATA = "select SRXTaskInsert(?, ?, ?, ?, ?, ?, ?)";
+    private static final String INSERT_DATA = "select SRXTaskInsert(?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String GET_TIME = "select SRXGetLastTaskDate()";
     private static final String JQL = Config.getInstance().getValue("jira.jqlSRX");
 
@@ -51,11 +51,27 @@ public class SRXProject extends Project {
                         }
                     }
                 }
+                if (issue.getCreationDate().compareTo(lastTime) > 0) {
+                    createTask(st, issue);
+                }
             }
         } catch (SQLException | IOException e) {
             log.error("Error on handling project", e);
         }
         log.trace("End\n");
+    }
+
+    private static void createTask(CallableStatement st, Issue issue) throws SQLException {
+        st.setString(1, issue.getKey());
+        st.setString(2, issue.getIssueType().getName());
+        st.setTimestamp(3, new Timestamp(issue.getCreationDate().getMillis()));
+        st.setString(4, null);
+        st.setString(5, "Новая");
+        st.setInt(6, IssueHelper.getIntFromField(issue, "aggregatetimespent"));
+        st.setString(7, IssueHelper.getFixVersions(issue));
+        st.setString(8, issue.getPriority().getName());
+        log.debug("query: '{}'", st.toString());
+        st.execute();
     }
 
     private static void insertStatus(CallableStatement st, Issue issue, ChangelogGroup cg, ChangelogItem ci) throws SQLException {
@@ -66,6 +82,7 @@ public class SRXProject extends Project {
         st.setString(5, ci.getToString());
         st.setInt(6, IssueHelper.getIntFromField(issue, "aggregatetimespent"));
         st.setString(7, IssueHelper.getFixVersions(issue));
+        st.setString(8, issue.getPriority().getName());
         log.debug("query: '{}'", st.toString());
         st.execute();
     }

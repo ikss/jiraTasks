@@ -1,8 +1,10 @@
 package ru.ikss.jiratask;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -16,8 +18,8 @@ public class Config {
 
     private Config() {
         props = new Properties();
-        try (FileReader fr = new FileReader(new File("config/config.conf"))) {
-            props.load(fr);
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File("config/config.conf")), "UTF-8"))) {
+            props.load(br);
         } catch (IOException e) {
             log.error("Error while loading properties", e);
             System.exit(-1);

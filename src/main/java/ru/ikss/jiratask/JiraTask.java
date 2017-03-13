@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import ru.ikss.jiratask.project.COPProject;
 import ru.ikss.jiratask.project.CRProject;
+import ru.ikss.jiratask.project.ClaimProject;
 import ru.ikss.jiratask.project.LSNProject;
 import ru.ikss.jiratask.project.Project;
 import ru.ikss.jiratask.project.SRXProject;
@@ -30,6 +31,7 @@ public class JiraTask {
         log.trace("------ Work started ------");
         log.debug("Execute with delay = {}", delay);
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        projects.add(new ClaimProject());
         projects.add(new Set5Project());
         projects.add(new Set10Project());
         projects.add(new CRProject());
