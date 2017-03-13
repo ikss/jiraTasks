@@ -25,16 +25,16 @@ import ru.ikss.jiratask.DAO;
 
 public class ClaimProject extends Project {
 
-    private static final Logger log = LoggerFactory.getLogger(Set10Project.class);
+    private static final Logger log = LoggerFactory.getLogger(ClaimProject.class);
     private static final String GET_TIME = "select ProblemsGetLastActionInfoDate()";
     private static final String INSERT_DATA = "select InsertProblems(?)";
-    private final DateTimeFormatter datePattern = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     @Override
     public void handleTasks() {
         log.trace("Handle project {}", this.getClass().getSimpleName());
         try {
             DateTime lastTime = getLastTime();
+            DateTimeFormatter datePattern = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
             String from = lastTime.toString(datePattern);
             String to = new DateTime().toString(datePattern);
 
@@ -75,7 +75,7 @@ public class ClaimProject extends Project {
         connection.addRequestProperty("Cookie", cookies.stream().map(c -> c.split("~", 2)[0]).collect(Collectors.joining(";")));
 
         try (InputStream content = connection.getInputStream();
-                BufferedReader in = new BufferedReader(new InputStreamReader(content))) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(content, "utf-8"))) {
             StringBuilder xml = new StringBuilder();
             String line;
             while ((line = in.readLine()) != null) {
@@ -91,7 +91,7 @@ public class ClaimProject extends Project {
             log.error(e.getMessage(), e);
             try (InputStream content = connection.getErrorStream()) {
                 if (content != null) {
-                    try (BufferedReader in = new BufferedReader(new InputStreamReader(content))) {
+                    try (BufferedReader in = new BufferedReader(new InputStreamReader(content, "utf-8"))) {
                         String line;
                         while ((line = in.readLine()) != null) {
                             log.error(line);
