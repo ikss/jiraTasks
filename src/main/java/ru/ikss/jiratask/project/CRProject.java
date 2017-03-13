@@ -134,6 +134,7 @@ public class CRProject extends Project {
         st.setString(16, cg.getAuthor().getDisplayName());
         st.setTimestamp(17, new Timestamp(cg.getCreated().getMillis()));
         st.setString(18, IssueHelper.getStringFromFieldArray(issue, "customfield_12800", ","));
+        st.setInt(19, IssueHelper.getDoubleFromField(issue, "customfield_12200").intValue());
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
