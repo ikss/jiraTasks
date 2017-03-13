@@ -27,8 +27,8 @@ import ru.ikss.jiratask.jira.JiraClient;
 public class CRProject extends Project {
 
     private static final Logger log = LoggerFactory.getLogger(CRProject.class);
-    private static final String INSERT_DATA = "select CRTaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE_DATA = "select CRTaskUpdate(?, ?, ?, ?)";
+    private static final String INSERT_DATA = "select CRTaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_DATA = "select CRTaskUpdate(?, ?, ?, ?, ?)";
     private static final String INSERT_WORKLOG = "select CRWorkLogInsert(?, ?, ?, ?)";
     private static final String JQL = Config.getInstance().getValue("jira.jqlCR");
     private static final String GET_TIME = "select CRGetLastTaskDate()";
@@ -73,6 +73,7 @@ public class CRProject extends Project {
         st.setString(2, issue.getStatus().getName());
         st.setString(3, IssueHelper.getFixVersions(issue));
         st.setInt(4, IssueHelper.getDoubleFromField(issue, "customfield_12701").intValue());
+        st.setInt(5, IssueHelper.getDoubleFromField(issue, "customfield_12200").intValue());
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
@@ -109,6 +110,7 @@ public class CRProject extends Project {
         st.setString(16, issue.getReporter().getDisplayName());
         st.setTimestamp(17, new Timestamp(issue.getCreationDate().getMillis()));
         st.setString(18, IssueHelper.getStringFromFieldArray(issue, "customfield_12800", ","));
+        st.setInt(19, IssueHelper.getDoubleFromField(issue, "customfield_12200").intValue());
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
