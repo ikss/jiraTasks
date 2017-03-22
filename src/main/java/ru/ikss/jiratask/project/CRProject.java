@@ -27,7 +27,7 @@ import ru.ikss.jiratask.jira.JiraClient;
 public class CRProject extends Project {
 
     private static final Logger log = LoggerFactory.getLogger(CRProject.class);
-    private static final String INSERT_DATA = "select CRTaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String INSERT_DATA = "select CRTaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String UPDATE_DATA = "select CRTaskUpdate(?, ?, ?, ?, ?)";
     private static final String INSERT_WORKLOG = "select CRWorkLogInsert(?, ?, ?, ?)";
     private static final String JQL = Config.getInstance().getValue("jira.jqlCR");
@@ -105,12 +105,13 @@ public class CRProject extends Project {
         st.setInt(11, IssueHelper.getIntFromField(issue, "aggregatetimespent").intValue());
         st.setInt(12, IssueHelper.getDoubleFromField(issue, "customfield_12701").intValue());
         st.setInt(13, IssueHelper.getDoubleFromField(issue, "customfield_12702").intValue());
-        st.setString(14, IssueHelper.getStringFromFieldArray(issue, "customfield_12601", ","));
+        st.setString(14, IssueHelper.getStringFromFieldArray(issue, "customfield_12601"));
         st.setString(15, IssueHelper.getValueFromFieldByKey(issue, "customfield_12606", "displayName"));
         st.setString(16, issue.getReporter().getDisplayName());
         st.setTimestamp(17, new Timestamp(issue.getCreationDate().getMillis()));
-        st.setString(18, IssueHelper.getStringFromFieldArray(issue, "customfield_12800", ","));
+        st.setString(18, IssueHelper.getStringFromFieldArray(issue, "customfield_12800"));
         st.setInt(19, IssueHelper.getDoubleFromField(issue, "customfield_12200").intValue());
+        st.setString(20, IssueHelper.getValueFromFieldByKey(issue, "customfield_12201", "value"));
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
@@ -129,12 +130,13 @@ public class CRProject extends Project {
         st.setInt(11, IssueHelper.getIntFromField(issue, "aggregatetimespent").intValue());
         st.setInt(12, IssueHelper.getDoubleFromField(issue, "customfield_12701").intValue());
         st.setInt(13, IssueHelper.getDoubleFromField(issue, "customfield_12702").intValue());
-        st.setString(14, IssueHelper.getStringFromFieldArray(issue, "customfield_12601", ","));
+        st.setString(14, IssueHelper.getStringFromFieldArray(issue, "customfield_12601"));
         st.setString(15, IssueHelper.getValueFromFieldByKey(issue, "customfield_12606", "displayName"));
         st.setString(16, cg.getAuthor().getDisplayName());
         st.setTimestamp(17, new Timestamp(cg.getCreated().getMillis()));
-        st.setString(18, IssueHelper.getStringFromFieldArray(issue, "customfield_12800", ","));
+        st.setString(18, IssueHelper.getStringFromFieldArray(issue, "customfield_12800"));
         st.setInt(19, IssueHelper.getDoubleFromField(issue, "customfield_12200").intValue());
+        st.setString(20, IssueHelper.getValueFromFieldByKey(issue, "customfield_12201", "value"));
         log.debug("query: '{}'", st.toString());
         st.execute();
     }

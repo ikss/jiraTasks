@@ -16,7 +16,7 @@ public class IssueHelper {
 
     private static final Logger log = LoggerFactory.getLogger(IssueHelper.class);
 
-    public static String getStringFromFieldArray(Issue issue, String fieldName, String delimeter) {
+    public static String getStringFromFieldArray(Issue issue, String fieldName) {
         String result = "";
         try {
             IssueField field = issue.getField(fieldName);
