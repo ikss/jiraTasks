@@ -1,13 +1,21 @@
 package ru.ikss.jiratask;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.xml.ws.Endpoint;
+import javax.xml.ws.soap.SOAPBinding;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.sun.net.httpserver.HttpContext;
+import com.sun.net.httpserver.HttpServer;
 
 import ru.ikss.jiratask.project.COPProject;
 import ru.ikss.jiratask.project.CRProject;
@@ -19,6 +27,7 @@ import ru.ikss.jiratask.project.Set10Project;
 import ru.ikss.jiratask.project.Set5Project;
 import ru.ikss.jiratask.project.TOUCHProject;
 import ru.ikss.jiratask.project.UXProject;
+import ru.ikss.jiratask.ws.VersionManager;
 
 public class JiraTask {
 
@@ -41,6 +50,24 @@ public class JiraTask {
         projects.add(new TOUCHProject());
         projects.add(new LSNProject());
         executor.scheduleWithFixedDelay(JiraTask::handleProjects, 0, delay, TimeUnit.MINUTES);
+
+        Integer sp = Integer.parseInt(Config.getInstance().getValue("WSPort", "0"));
+        if (sp > 0) {
+            InetSocketAddress addr = new InetSocketAddress(sp);
+            HttpServer server;
+            try {
+                server = HttpServer.create(addr, 0);
+                HttpContext soapContext = server.createContext("/VersionManager");
+                server.setExecutor(Executors.newCachedThreadPool());
+                server.start();
+                Endpoint endpoint = Endpoint.create(SOAPBinding.SOAP11HTTP_BINDING, new VersionManager());
+                endpoint.publish(soapContext);
+
+                log.debug("Веб-сервер http://0.0.0.0:" + sp + "/VersionManager запущен!");
+            } catch (IOException e) {
+                log.error("Ошибка создания веб-сервиса: " + e.getMessage(), e);
+            }
+        }
     }
 
     private static void handleProjects() {
