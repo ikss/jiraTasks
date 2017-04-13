@@ -28,7 +28,7 @@ public class CRProject extends Project {
 
     private static final Logger log = LoggerFactory.getLogger(CRProject.class);
     private static final String INSERT_DATA = "select CRTaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE_DATA = "select CRTaskUpdate(?, ?, ?, ?, ?)";
+    private static final String UPDATE_DATA = "select CRTaskUpdate(?, ?, ?, ?, ?, ?)";
     private static final String INSERT_WORKLOG = "select CRWorkLogInsert(?, ?, ?, ?)";
     private static final String JQL = Config.getInstance().getValue("jira.jqlCR");
     private static final String GET_TIME = "select CRGetLastTaskDate()";
@@ -74,6 +74,7 @@ public class CRProject extends Project {
         st.setString(3, IssueHelper.getFixVersions(issue));
         st.setInt(4, IssueHelper.getDoubleFromField(issue, "customfield_12701").intValue());
         st.setInt(5, IssueHelper.getDoubleFromField(issue, "customfield_12200").intValue());
+        st.setString(6, IssueHelper.getStringFromFieldArray(issue, "customfield_12800"));
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
