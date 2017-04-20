@@ -32,7 +32,8 @@ import ru.ikss.jiratask.jira.JiraClient;
 public class Set10Project extends Project {
 
     private static final Logger log = LoggerFactory.getLogger(Set10Project.class);
-    private static final String INSERT_DATA = "select set10TaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String INSERT_DATA = "select set10TaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_DATA = "select set10TaskUpdate(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String INSERT_WORKLOG = "select set10WorkLogInsert(?, ?, ?, ?)";
     private static final String GET_TIME = "select set10GetLastTaskDate()";
     private static final String JQL = Config.getInstance().getValue("jira.jqlSet10");
@@ -47,6 +48,7 @@ public class Set10Project extends Project {
         try (JiraRestClient client = JiraClient.getInstance().getClient();
                 Connection con = DAO.I.getConnection();
                 CallableStatement st = con.prepareCall(INSERT_DATA);
+                CallableStatement updateStatement = con.prepareCall(UPDATE_DATA);
                 CallableStatement worklogStatement = con.prepareCall(INSERT_WORKLOG)) {
             for (String key : getAllTasks(client, jql)) {
                 Issue issue = client.getIssueClient().getIssue(key, Collections.singletonList(Expandos.CHANGELOG)).claim();
@@ -81,8 +83,8 @@ public class Set10Project extends Project {
                         }
                     }
                 }
-
                 insertWorklog(worklogStatement, issue, lastTime);
+                updateTask(updateStatement, issue, team, caused);
             }
         } catch (SQLException | IOException e) {
             log.error("Error on handling project", e);
@@ -106,6 +108,23 @@ public class Set10Project extends Project {
         st.setString(12, IssueHelper.getValueFromFieldByKey(issue, "creator", "displayName"));
         st.setString(13, issue.getPriority().getName());
         st.setString(14, issue.getSummary());
+        st.setString(15, IssueHelper.getValueFromFieldByKey(issue, "customfield_13500", "value")); // IssueRootCause
+        st.setString(16, IssueHelper.getStringFromFieldArray(issue, "customfield_10401")); // Sprint
+        log.debug("query: '{}'", st.toString());
+        st.execute();
+    }
+
+    private static void updateTask(CallableStatement st, Issue issue, String team, String caused) throws SQLException {
+        st.setString(1, issue.getKey());
+        st.setString(2, issue.getStatus().getName());
+        st.setString(3, issue.getIssueType().getName());
+        st.setString(4, team);
+        st.setString(5, IssueHelper.getFixVersions(issue));
+        st.setString(6, caused);
+        st.setString(7, IssueHelper.getValueFromFieldByKey(issue, "parent", "key"));
+        st.setString(8, issue.getPriority().getName());
+        st.setString(9, IssueHelper.getValueFromFieldByKey(issue, "customfield_13500", "value")); // IssueRootCause
+        st.setString(10, IssueHelper.getStringFromFieldArray(issue, "customfield_10401")); // Sprint
         log.debug("query: '{}'", st.toString());
         st.execute();
     }

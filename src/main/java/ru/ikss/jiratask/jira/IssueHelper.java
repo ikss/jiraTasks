@@ -1,5 +1,6 @@
 package ru.ikss.jiratask.jira;
 
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -17,22 +18,38 @@ public class IssueHelper {
     private static final Logger log = LoggerFactory.getLogger(IssueHelper.class);
 
     public static String getStringFromFieldArray(Issue issue, String fieldName) {
-        String result = "";
+        StringJoiner result = new StringJoiner(",");
         try {
             IssueField field = issue.getField(fieldName);
             if (field != null && field.getValue() != null) {
                 JSONArray value = (JSONArray) field.getValue();
                 for (int i = 0; i < value.length(); ++i) {
-                    if (!result.isEmpty()) {
-                        result = result + ",";
-                    }
-                    result = result + (String) value.get(i);
+                    result.add((String) value.get(i));
                 }
             }
         } catch (Exception e) {
             log.error("Can\'t get {}", fieldName, e);
         }
-        return result;
+        return result.toString();
+    }
+
+    public static String getStringFromFieldArrayByKey(Issue issue, String fieldName, String key) {
+        String startWith = key + "=";
+        try {
+            IssueField field = issue.getField(fieldName);
+            if (field != null && field.getValue() != null) {
+                JSONArray value = (JSONArray) field.getValue();
+                for (int i = 0; i < value.length(); ++i) {
+                    String v = (String) value.get(i);
+                    if (v.startsWith(startWith)) {
+                        return v.substring(startWith.length());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Can\'t get {}", fieldName, e);
+        }
+        return "";
     }
 
     public static String getFixVersions(Issue issue) {
