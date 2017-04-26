@@ -32,8 +32,8 @@ import ru.ikss.jiratask.jira.JiraClient;
 public class Set10Project extends Project {
 
     private static final Logger log = LoggerFactory.getLogger(Set10Project.class);
-    private static final String INSERT_DATA = "select set10TaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE_DATA = "select set10TaskUpdate(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String INSERT_DATA = "select set10TaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_DATA = "select set10TaskUpdate(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String INSERT_WORKLOG = "select set10WorkLogInsert(?, ?, ?, ?)";
     private static final String GET_TIME = "select set10GetLastTaskDate()";
     private static final String JQL = Config.getInstance().getValue("jira.jqlSet10");
@@ -110,6 +110,7 @@ public class Set10Project extends Project {
         st.setString(14, issue.getSummary());
         st.setString(15, IssueHelper.getValueFromFieldByKey(issue, "customfield_13500", "value")); // IssueRootCause
         st.setString(16, IssueHelper.getStringFromFieldArray(issue, "customfield_10401")); // Sprint
+        st.setFloat(17, IssueHelper.getDoubleFromField(issue, "customfield_10105").floatValue()); // StoryPoints
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
@@ -125,6 +126,7 @@ public class Set10Project extends Project {
         st.setString(8, issue.getPriority().getName());
         st.setString(9, IssueHelper.getValueFromFieldByKey(issue, "customfield_13500", "value")); // IssueRootCause
         st.setString(10, IssueHelper.getStringFromFieldArray(issue, "customfield_10401")); // Sprint
+        st.setFloat(11, IssueHelper.getDoubleFromField(issue, "customfield_10105").floatValue()); // StoryPoints
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
