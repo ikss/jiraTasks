@@ -58,7 +58,6 @@ public class SRXProject extends Project {
         } catch (SQLException | IOException e) {
             log.error("Error on handling project", e);
         }
-        log.trace("End\n");
     }
 
     private static void createTask(CallableStatement st, Issue issue) throws SQLException {

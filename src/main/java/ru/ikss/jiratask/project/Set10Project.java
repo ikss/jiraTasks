@@ -89,7 +89,6 @@ public class Set10Project extends Project {
         } catch (SQLException | IOException e) {
             log.error("Error on handling project", e);
         }
-        log.trace("End\n");
     }
 
     private static void insertStatus(CallableStatement st, Issue issue, ChangelogGroup cg, ChangelogItem ci, String team, String caused)

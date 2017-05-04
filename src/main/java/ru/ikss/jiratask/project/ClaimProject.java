@@ -66,7 +66,6 @@ public class ClaimProject extends Project {
         } catch (Exception e) {
             log.error("Error on handling project", e);
         }
-        log.trace("End\n");
     }
 
     private static String open(URL url, List<String> cookies) throws IOException, ProtocolException {

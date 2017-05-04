@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.xml.ws.Endpoint;
 import javax.xml.ws.soap.SOAPBinding;
@@ -76,15 +79,30 @@ public class JiraTask {
 
     private static void handleProjects() {
         log.trace("------ Start handling projects ------");
-        for (Project project : projects) {
+        if (!Config.getInstance().getValue("sequential", "0").equals("1")) {
+            ExecutorService executor = Executors.newFixedThreadPool(projects.size());
             try {
-                project.handleTasks();
-            } catch (Throwable e) {
-                log.error(project.getClass().getSimpleName() + " error: " + e.getMessage(), e);
+                executor.invokeAll(projects.stream().map(project -> (Callable<Void>) (() -> {
+                    try {
+                        project.handleTasks();
+                    } catch (Throwable e) {
+                        log.error(project.getClass().getSimpleName() + " error: " + e.getMessage(), e);
+                    }
+                    return null;
+                })).collect(Collectors.toList()));
+            } catch (InterruptedException e1) {
+                log.error("InterruptedException: " + e1.getMessage(), e1);
+            }
+        } else {
+            for (Project project : projects) {
+                try {
+                    project.handleTasks();
+                } catch (Throwable e) {
+                    log.error(project.getClass().getSimpleName() + " error: " + e.getMessage(), e);
+                }
             }
         }
         DAO.I.recalcData();
         log.trace("------ All projects handled ------");
     }
-
 }
