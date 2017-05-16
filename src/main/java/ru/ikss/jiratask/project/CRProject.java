@@ -110,7 +110,7 @@ public class CRProject extends Project {
         st.setString(16, issue.getReporter().getDisplayName());
         st.setTimestamp(17, new Timestamp(issue.getCreationDate().getMillis()));
         st.setString(18, IssueHelper.getStringFromFieldArray(issue, "customfield_12800"));
-        st.setInt(19, IssueHelper.getDoubleFromField(issue, "customfield_12200").intValue());
+        st.setInt(19, IssueHelper.getDoubleFromField(issue, "customfield_12200").intValue()); // Cost
         st.setString(20, IssueHelper.getValueFromFieldByKey(issue, "customfield_12201", "value"));
         log.debug("query: '{}'", st.toString());
         st.execute();

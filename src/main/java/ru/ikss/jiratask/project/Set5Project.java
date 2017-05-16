@@ -26,7 +26,7 @@ import ru.ikss.jiratask.jira.JiraClient;
 public class Set5Project extends Project {
 
     private static final Logger log = LoggerFactory.getLogger(Set5Project.class);
-    private static final String INSERT_DATA = "select taskInsert(?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String INSERT_DATA = "select taskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String GET_TIME = "select getLastTaskDate()";
     private static final String JQL = Config.getInstance().getValue("jira.jqlSet5");
     private static final String devTime = "customfield_12400";
@@ -68,6 +68,7 @@ public class Set5Project extends Project {
         st.setInt(6, IssueHelper.getDoubleFromField(issue, devTime).intValue());
         st.setInt(7, IssueHelper.getDoubleFromField(issue, testTime).intValue());
         st.setString(8, IssueHelper.getFixVersions(issue));
+        st.setInt(9, IssueHelper.getDoubleFromField(issue, "customfield_12200").intValue()); // Cost
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
