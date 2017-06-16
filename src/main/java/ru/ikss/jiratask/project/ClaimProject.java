@@ -31,7 +31,7 @@ public class ClaimProject extends Project {
 
     @Override
     public void handleTasks() {
-        log.trace("Handle project {}", this.getClass().getSimpleName());
+        log.trace("Handle project {}", this.toString());
         try {
             DateTime lastTime = getLastTime();
             DateTimeFormatter datePattern = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
@@ -61,14 +61,14 @@ public class ClaimProject extends Project {
                     st.execute();
                 }
             } else {
-                log.warn("No data");
+                log.warn(this + "No data");
             }
         } catch (Exception e) {
-            log.error("Error on handling project", e);
+            log.error(this + "Error on handling project", e);
         }
     }
 
-    private static String open(URL url, List<String> cookies) throws IOException, ProtocolException {
+    private String open(URL url, List<String> cookies) throws IOException, ProtocolException {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         connection.addRequestProperty("Cookie", cookies.stream().map(c -> c.split("~", 2)[0]).collect(Collectors.joining(";")));
@@ -87,7 +87,7 @@ public class ClaimProject extends Project {
             }
             return xml.toString();
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.error(this + e.getMessage(), e);
             try (InputStream content = connection.getErrorStream()) {
                 if (content != null) {
                     try (BufferedReader in = new BufferedReader(new InputStreamReader(content, "utf-8"))) {

@@ -32,6 +32,7 @@ import ru.ikss.jiratask.project.Set5Project;
 import ru.ikss.jiratask.project.TOUCHProject;
 import ru.ikss.jiratask.project.UXProject;
 import ru.ikss.jiratask.project.WalletProject;
+import ru.ikss.jiratask.project._1C;
 import ru.ikss.jiratask.ws.VersionManager;
 
 public class JiraTask {
@@ -58,6 +59,8 @@ public class JiraTask {
         projects.add(new WalletProject());
         executor.scheduleWithFixedDelay(JiraTask::handleProjects, 0, delay, TimeUnit.MINUTES);
 
+        start1C();
+
         Integer sp = Integer.parseInt(Config.getInstance().getValue("WSPort", "0"));
         if (sp > 0) {
             InetSocketAddress addr = new InetSocketAddress(sp);
@@ -75,6 +78,12 @@ public class JiraTask {
                 log.error("Ошибка создания веб-сервиса: " + e.getMessage(), e);
             }
         }
+    }
+
+    private static void start1C() {
+        ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
+        Integer delay = Integer.valueOf(Config.getInstance().getValue("1C.delay", "60"));
+        pool.scheduleWithFixedDelay(_1C::getData, 0, delay, TimeUnit.MINUTES);
     }
 
     private static void handleProjects() {

@@ -44,8 +44,13 @@ public abstract class Project {
                 startAt++;
             }
         } while (hasData);
-        log.trace("Total works: {}", result.size());
+        log.trace(this + "Total works: {}", result.size());
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "\t";
     }
 
 }
