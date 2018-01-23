@@ -116,6 +116,12 @@ public class Set10Project extends Project {
         } else {
             st.setNull(18, Types.VARCHAR);
         }
+        st.setString(19, IssueHelper.getValueFromFieldByKey(issue, "creator", "emailAddress"));
+        if (issue.getAssignee() != null) {
+            st.setString(20, issue.getAssignee().getEmailAddress());
+        } else {
+            st.setNull(20, Types.VARCHAR);
+        }
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
@@ -136,6 +142,12 @@ public class Set10Project extends Project {
             st.setString(12, issue.getResolution().getName());
         } else {
             st.setNull(12, Types.VARCHAR);
+        }
+        st.setString(13, IssueHelper.getValueFromFieldByKey(issue, "creator", "emailAddress"));
+        if (issue.getAssignee() != null) {
+            st.setString(14, issue.getAssignee().getEmailAddress());
+        } else {
+            st.setNull(14, Types.VARCHAR);
         }
         log.debug("query: '{}'", st.toString());
         st.execute();
