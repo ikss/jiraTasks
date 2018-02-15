@@ -81,6 +81,15 @@ public class IssueHelper {
         return result;
     }
 
+    public static String getFieldValueAsString(Issue issue, String key) {
+        String result = "";
+        IssueField field = issue.getField(key);
+        if (field != null && field.getValue() != null) {
+            result = field.getValue().toString();
+        }
+        return result;
+    }
+
     public static String getValueFromFieldByKey(Issue issue, String fieldName, String key) {
         try {
             IssueField field = issue.getField(fieldName);
