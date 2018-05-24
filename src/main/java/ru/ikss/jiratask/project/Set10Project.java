@@ -35,7 +35,7 @@ public class Set10Project extends Project {
     private static final Logger log = LoggerFactory.getLogger(Set10Project.class);
     private static final String INSERT_DATA = "select set10TaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String UPDATE_DATA = "select set10TaskUpdate(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String INSERT_WORKLOG = "select set10WorkLogInsert(?, ?, ?, ?)";
+    private static final String INSERT_WORKLOG = "select set10WorkLogInsert(?, ?, ?, ?, ?)";
     private static final String GET_TIME = "select set10GetLastTaskDate()";
     private static final String JQL = Config.getInstance().getValue("jira.jqlSet10");
     private static final List<String> TEAMS = Arrays.asList("setretaila", "setretailb", "setretaile", "sco");
@@ -174,6 +174,7 @@ public class Set10Project extends Project {
                 st.setString(2, wl.getUpdateAuthor().getDisplayName());
                 st.setInt(3, wl.getMinutesSpent());
                 st.setTimestamp(4, new Timestamp(wl.getUpdateDate().getMillis()));
+                st.setTimestamp(5, new Timestamp(wl.getStartDate().getMillis()));
                 log.debug("query: '{}'", st.toString());
                 st.execute();
             }
