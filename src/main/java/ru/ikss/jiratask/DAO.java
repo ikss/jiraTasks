@@ -48,7 +48,7 @@ public enum DAO {
         try (Statement st = getConnection().createStatement()) {
             log.trace("Start recalc");
             st.execute(queryRecalcData);
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             log.error("Error on recalc data", e);
         }
     }

@@ -38,7 +38,7 @@ public class _1C {
                 log.trace("1C\t< " + ans);
                 insertDataFrom1C(ans);
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.error("1C\t " + e.getMessage(), e);
         }
     }
