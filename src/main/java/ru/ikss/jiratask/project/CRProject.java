@@ -5,6 +5,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.Collections;
 
 import org.joda.time.DateTime;
@@ -27,7 +28,7 @@ import ru.ikss.jiratask.jira.JiraClient;
 public class CRProject extends Project {
 
     private static final Logger log = LoggerFactory.getLogger(CRProject.class);
-    private static final String INSERT_DATA = "select CRTaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String INSERT_DATA = "select CRTaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String UPDATE_DATA = "select CRTaskUpdate(?, ?, ?, ?, ?, ?, ?)";
     private static final String INSERT_WORKLOG = "select CRWorkLogInsert(?, ?, ?, ?)";
     private static final String JQL = Config.getInstance().getValue("jira.jqlCR");
@@ -114,6 +115,11 @@ public class CRProject extends Project {
         st.setInt(19, IssueHelper.getDoubleFromField(issue, "customfield_12200").intValue()); // Cost
         st.setString(20, IssueHelper.getValueFromFieldByKey(issue, "customfield_12201", "value"));
         st.setString(21, IssueHelper.getValueFromFieldByKey(issue, "customfield_13900", "value"));
+        if (issue.getResolution() != null) {
+            st.setString(22, issue.getResolution().getName());
+        } else {
+            st.setNull(22, Types.VARCHAR);
+        }
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
@@ -140,6 +146,11 @@ public class CRProject extends Project {
         st.setInt(19, IssueHelper.getDoubleFromField(issue, "customfield_12200").intValue());
         st.setString(20, IssueHelper.getValueFromFieldByKey(issue, "customfield_12201", "value"));
         st.setString(21, IssueHelper.getValueFromFieldByKey(issue, "customfield_13900", "value"));
+        if (issue.getResolution() != null) {
+            st.setString(22, issue.getResolution().getName());
+        } else {
+            st.setNull(22, Types.VARCHAR);
+        }
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
