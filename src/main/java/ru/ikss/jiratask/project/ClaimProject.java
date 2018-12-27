@@ -50,8 +50,11 @@ public class ClaimProject extends Project {
             log.trace(answer);
 
             String getProblemsUrl =
-                    httpUrl + "/GetProblems" + "?" + "fm=" + URLEncoder.encode(from, "UTF-8") + "&to=" + URLEncoder.encode(to, "UTF-8") +
-                        "&deptID=" + Config.getInstance().getValue("claim.deptID", "-1");
+                    httpUrl + "/GetProblems" + "?" +
+                        "fm=" + URLEncoder.encode(from, "UTF-8") +
+                        "&to=" + URLEncoder.encode(to, "UTF-8") +
+                        "&deptID=" + Config.getInstance().getValue("claim.deptID", "-1") +
+                        "&emptyLongFields=" + "1".equals(Config.getInstance().getValue("claim.emptyLongFields", "1"));
             String xml = open(new URL(getProblemsUrl), cookies);
             if (xml != null) {
                 log.trace("xml size = " + xml.length());

@@ -33,12 +33,13 @@ import ru.ikss.jiratask.jira.JiraClient;
 public class Set10Project extends Project {
 
     private static final Logger log = LoggerFactory.getLogger(Set10Project.class);
-    private static final String INSERT_DATA = "select set10TaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE_DATA = "select set10TaskUpdate(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String INSERT_DATA = "select set10TaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_DATA = "select set10TaskUpdate(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String INSERT_WORKLOG = "select set10WorkLogInsert(?, ?, ?, ?, ?)";
+    private static final String CHANGE_JIRA_NUMBER = "select ChangeJira(?, ?)";
     private static final String GET_TIME = "select set10GetLastTaskDate()";
     private static final String JQL = Config.getInstance().getValue("jira.jqlSet10");
-    private static final List<String> TEAMS = Arrays.asList("setretaila", "setretailb", "setretaile", "sco");
+    private static final List<String> TEAMS = Arrays.asList("setretaila", "setretailb", "setretaile", "sco", "touch", "core");
 
     @Override
     public void handleTasks() {
@@ -50,7 +51,8 @@ public class Set10Project extends Project {
                 Connection con = DAO.I.getConnection();
                 CallableStatement st = con.prepareCall(INSERT_DATA);
                 CallableStatement updateStatement = con.prepareCall(UPDATE_DATA);
-                CallableStatement worklogStatement = con.prepareCall(INSERT_WORKLOG)) {
+                CallableStatement worklogStatement = con.prepareCall(INSERT_WORKLOG);
+                CallableStatement changeNumberStatement = con.prepareCall(CHANGE_JIRA_NUMBER)) {
             for (String key : getAllTasks(client, jql)) {
                 Issue issue = client.getIssueClient().getIssue(key, Collections.singletonList(Expandos.CHANGELOG)).claim();
                 log.trace(issue.getKey() + "\t" + issue.getStatus().getName());
@@ -83,6 +85,11 @@ public class Set10Project extends Project {
                             }
                         }
                     }
+                    for (ChangelogItem ci : cg.getItems()) {
+                        if (ci.getField().equals("Key")) {
+                            changeJiraNumber(changeNumberStatement, ci.getFromString(), ci.getToString());
+                        }
+                    }
                 }
                 insertWorklog(worklogStatement, issue, lastTime);
                 updateTask(updateStatement, issue, team, caused);
@@ -90,6 +97,13 @@ public class Set10Project extends Project {
         } catch (SQLException | IOException e) {
             log.error("Error on handling project", e);
         }
+    }
+
+    private static void changeJiraNumber(CallableStatement st, String from, String to) throws SQLException {
+        st.setString(1, from);
+        st.setString(2, to);
+        log.debug("query: '{}'", st.toString());
+        st.execute();
     }
 
     private static void insertStatus(CallableStatement st, Issue issue, ChangelogGroup cg, ChangelogItem ci, String team, String caused)
@@ -129,6 +143,7 @@ public class Set10Project extends Project {
         } else {
             st.setNull(21, Types.VARCHAR);
         }
+        st.setString(22, IssueHelper.getValueFromFieldByKey(issue, "customfield_13911", "value"));
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
@@ -168,6 +183,7 @@ public class Set10Project extends Project {
         } else {
             st.setNull(16, Types.INTEGER);
         }
+        st.setString(17, IssueHelper.getValueFromFieldByKey(issue, "customfield_13911", "value"));
         log.debug("query: '{}'", st.toString());
         st.execute();
     }

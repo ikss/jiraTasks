@@ -6,7 +6,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.Collections;
+import java.util.Arrays;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -28,8 +28,8 @@ import ru.ikss.jiratask.jira.JiraClient;
 public class CRProject extends Project {
 
     private static final Logger log = LoggerFactory.getLogger(CRProject.class);
-    private static final String INSERT_DATA = "select CRTaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE_DATA = "select CRTaskUpdate(?, ?, ?, ?, ?, ?, ?)";
+    private static final String INSERT_DATA = "select CRTaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_DATA = "select CRTaskUpdate(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String INSERT_WORKLOG = "select CRWorkLogInsert(?, ?, ?, ?)";
     private static final String JQL = Config.getInstance().getValue("jira.jqlCR");
     private static final String GET_TIME = "select CRGetLastTaskDate()";
@@ -46,7 +46,8 @@ public class CRProject extends Project {
                 CallableStatement updateStatement = con.prepareCall(UPDATE_DATA);
                 CallableStatement worklogStatement = con.prepareCall(INSERT_WORKLOG)) {
             for (String key : getAllTasks(client, jql)) {
-                Issue issue = client.getIssueClient().getIssue(key, Collections.singletonList(Expandos.CHANGELOG)).claim();
+                log.trace(key);
+                Issue issue = client.getIssueClient().getIssue(key, Arrays.asList(Expandos.CHANGELOG)).claim();
                 log.trace(issue.getKey() + "\t" + issue.getStatus().getName());
                 for (ChangelogGroup cg : issue.getChangelog()) {
                     if (cg.getCreated().compareTo(lastTime) > 0) {
@@ -76,6 +77,10 @@ public class CRProject extends Project {
         st.setInt(5, IssueHelper.getDoubleFromField(issue, "customfield_12200").intValue());
         st.setString(6, IssueHelper.getStringFromFieldArray(issue, "customfield_12800"));
         st.setString(7, IssueHelper.getValueFromFieldByKey(issue, "customfield_13900", "value"));
+        st.setString(8, issue.getAssignee() == null ? null : issue.getAssignee().getDisplayName());
+        st.setString(9, issue.getAssignee() == null ? null : issue.getAssignee().getEmailAddress());
+        st.setString(10, IssueHelper.getValueFromFieldByKey(issue, "customfield_12606", "emailAddress"));
+        st.setString(11, IssueHelper.getStringFromFieldArray(issue, "customfield_10401")); // Sprint
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
@@ -120,6 +125,9 @@ public class CRProject extends Project {
         } else {
             st.setNull(22, Types.VARCHAR);
         }
+        st.setString(23, issue.getAssignee() == null ? null : issue.getAssignee().getEmailAddress());
+        st.setString(24, IssueHelper.getValueFromFieldByKey(issue, "customfield_12606", "emailAddress"));
+        st.setString(25, IssueHelper.getStringFromFieldArray(issue, "customfield_10401")); // Sprint
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
@@ -151,6 +159,9 @@ public class CRProject extends Project {
         } else {
             st.setNull(22, Types.VARCHAR);
         }
+        st.setString(23, issue.getAssignee() == null ? null : issue.getAssignee().getEmailAddress());
+        st.setString(24, IssueHelper.getValueFromFieldByKey(issue, "customfield_12606", "emailAddress"));
+        st.setString(25, IssueHelper.getStringFromFieldArray(issue, "customfield_10401")); // Sprint
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
@@ -159,5 +170,4 @@ public class CRProject extends Project {
     public String getTimeQuery() {
         return GET_TIME;
     }
-
 }

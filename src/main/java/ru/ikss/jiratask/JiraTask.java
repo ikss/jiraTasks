@@ -46,20 +46,23 @@ public class JiraTask {
         log.trace("------ Work started ------");
         log.debug("Execute with delay = {}", delay);
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        projects.add(new ClaimProject());
-        projects.add(new Set5Project());
-        projects.add(new Set10Project());
-        projects.add(new CRProject());
-        projects.add(new COPProject());
-        projects.add(new UXProject());
-        projects.add(new SRXProject());
-        projects.add(new TOUCHProject());
-        projects.add(new LSNProject());
-        projects.add(new MachineProject());
-        projects.add(new WalletProject());
+        if ("1".equals(Config.getInstance().getValue("test", "0"))) {
+            projects.add(new CRProject());
+        } else {
+            projects.add(new ClaimProject());
+            projects.add(new Set5Project());
+            projects.add(new Set10Project());
+            projects.add(new CRProject());
+            projects.add(new COPProject());
+            projects.add(new UXProject());
+            projects.add(new SRXProject());
+            projects.add(new TOUCHProject());
+            projects.add(new LSNProject());
+            projects.add(new MachineProject());
+            projects.add(new WalletProject());
+            start1C();
+        }
         executor.scheduleWithFixedDelay(JiraTask::handleProjects, 0, delay, TimeUnit.MINUTES);
-
-        start1C();
 
         Integer sp = Integer.parseInt(Config.getInstance().getValue("WSPort", "0"));
         if (sp > 0) {
@@ -83,7 +86,7 @@ public class JiraTask {
     private static void start1C() {
         ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
         Integer delay = Integer.valueOf(Config.getInstance().getValue("1C.delay", "60"));
-        pool.scheduleWithFixedDelay(_1C::getData, 0, delay, TimeUnit.MINUTES);
+        pool.scheduleWithFixedDelay(_1C::process, 0, delay, TimeUnit.MINUTES);
     }
 
     private static void handleProjects() {

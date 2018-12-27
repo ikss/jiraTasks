@@ -28,18 +28,27 @@ public class _1C {
 
     private static final Logger log = LoggerFactory.getLogger(_1C.class);
 
-    public static void getData() {
+    public static void process() {
         log.trace("Handle project 1C");
         try {
             String req = getPeriodFor1C();
             if (req != null && !req.isEmpty()) {
                 log.trace("1C\t> " + req);
-                String ans = getDataFrom1C(req);
-                log.trace("1C\t< " + ans);
-                insertDataFrom1C(ans);
+                getData(req, "getProductSales", "1C.url", "insertDataFrom1C");
+                getData(req, "Vacation", "1C.Vacation.url", "insertVacation1C");
             }
         } catch (Throwable e) {
             log.error("1C\t " + e.getMessage(), e);
+        }
+    }
+
+    private static void getData(String req, String toString, String urlKey, String procedure) {
+        try {
+            String ans = getDataFrom1C(urlKey, req);
+            log.trace("1C." + toString + "\t< " + ans);
+            insertDataFrom1C(ans, procedure);
+        } catch (SQLException | IOException e) {
+            log.error("1C." + toString + "\t " + e.getMessage(), e);
         }
     }
 
@@ -54,12 +63,13 @@ public class _1C {
         return result;
     }
 
-    private static String getDataFrom1C(String bodyStr) throws UnsupportedEncodingException, MalformedURLException, IOException, ProtocolException {
+    private static String getDataFrom1C(String urlKey, String bodyStr)
+        throws UnsupportedEncodingException, MalformedURLException, IOException, ProtocolException {
         byte[] outputByte = bodyStr.getBytes("utf-8");
 
         String login = URLEncoder.encode(Config.getInstance().getValue("1C.login", "user"), "UTF-8");
         String pwd = URLEncoder.encode(Config.getInstance().getValue("1C.pwd", ""), "UTF-8");
-        String httpUrl = Config.getInstance().getValue("1C.url", "http://1C-host/.../Synchronization/ProductSales");
+        String httpUrl = Config.getInstance().getValue(urlKey, "http://1C-host/.../Synchronization/method");
         URL url = new URL(httpUrl);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoInput(true);
@@ -87,10 +97,10 @@ public class _1C {
         return null;
     }
 
-    private static void insertDataFrom1C(String ans) throws SQLException {
+    private static void insertDataFrom1C(String ans, String procedure) throws SQLException {
         if (ans != null && !ans.isEmpty()) {
             try (Connection con = DAO.I.getConnection();
-                    CallableStatement st = con.prepareCall("select insertDataFrom1C(?)")) {
+                    CallableStatement st = con.prepareCall("select " + procedure + "(?)")) {
                 st.setString(1, ans);
                 st.execute();
             }
@@ -122,6 +132,6 @@ public class _1C {
     }
 
     public static void main(String[] args) {
-        getData();
+        process();
     }
 }
