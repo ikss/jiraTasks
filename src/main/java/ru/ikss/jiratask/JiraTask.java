@@ -47,7 +47,7 @@ public class JiraTask {
         log.debug("Execute with delay = {}", delay);
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         if ("1".equals(Config.getInstance().getValue("test", "0"))) {
-            projects.add(new Set10Project());
+            projects.add(new CRProject());
         } else {
             ClaimProject claimProject = new ClaimProject();
             projects.add(claimProject::getProblems);

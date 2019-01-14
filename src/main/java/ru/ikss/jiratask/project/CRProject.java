@@ -28,8 +28,8 @@ import ru.ikss.jiratask.jira.JiraClient;
 public class CRProject extends Project {
 
     private static final Logger log = LoggerFactory.getLogger(CRProject.class);
-    private static final String INSERT_DATA = "select CRTaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE_DATA = "select CRTaskUpdate(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String INSERT_DATA = "select CRTaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_DATA = "select CRTaskUpdate(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String INSERT_WORKLOG = "select CRWorkLogInsert(?, ?, ?, ?)";
     private static final String JQL = Config.getInstance().getValue("jira.jqlCR");
     private static final String GET_TIME = "select CRGetLastTaskDate()";
@@ -81,6 +81,7 @@ public class CRProject extends Project {
         st.setString(9, issue.getAssignee() == null ? null : issue.getAssignee().getEmailAddress());
         st.setString(10, IssueHelper.getValueFromFieldByKey(issue, "customfield_12606", "emailAddress"));
         st.setString(11, IssueHelper.getStringFromFieldArray(issue, "customfield_10401")); // Sprint
+        st.setString(12, IssueHelper.getValueFromFieldByKey(issue, "customfield_13924", "name")); // Аналитик
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
@@ -128,6 +129,7 @@ public class CRProject extends Project {
         st.setString(23, issue.getAssignee() == null ? null : issue.getAssignee().getEmailAddress());
         st.setString(24, IssueHelper.getValueFromFieldByKey(issue, "customfield_12606", "emailAddress"));
         st.setString(25, IssueHelper.getStringFromFieldArray(issue, "customfield_10401")); // Sprint
+        st.setString(26, IssueHelper.getValueFromFieldByKey(issue, "customfield_13924", "name")); // Аналитик
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
@@ -162,6 +164,7 @@ public class CRProject extends Project {
         st.setString(23, issue.getAssignee() == null ? null : issue.getAssignee().getEmailAddress());
         st.setString(24, IssueHelper.getValueFromFieldByKey(issue, "customfield_12606", "emailAddress"));
         st.setString(25, IssueHelper.getStringFromFieldArray(issue, "customfield_10401")); // Sprint
+        st.setString(26, IssueHelper.getValueFromFieldByKey(issue, "customfield_13924", "name")); // Аналитик
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
