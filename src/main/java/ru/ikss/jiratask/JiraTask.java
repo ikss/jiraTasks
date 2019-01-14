@@ -25,7 +25,7 @@ import ru.ikss.jiratask.project.CRProject;
 import ru.ikss.jiratask.project.ClaimProject;
 import ru.ikss.jiratask.project.LSNProject;
 import ru.ikss.jiratask.project.MachineProject;
-import ru.ikss.jiratask.project.Project;
+import ru.ikss.jiratask.project.ProjectTask;
 import ru.ikss.jiratask.project.SRXProject;
 import ru.ikss.jiratask.project.Set10Project;
 import ru.ikss.jiratask.project.Set5Project;
@@ -39,7 +39,7 @@ public class JiraTask {
 
     private static final Logger log = LoggerFactory.getLogger(JiraTask.class);
 
-    private static List<Project> projects = new ArrayList<>();
+    private static List<ProjectTask> projects = new ArrayList<>();
 
     public static void main(String[] args) {
         Integer delay = Integer.valueOf(Config.getInstance().getValue("delay", "60"));
@@ -47,9 +47,11 @@ public class JiraTask {
         log.debug("Execute with delay = {}", delay);
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         if ("1".equals(Config.getInstance().getValue("test", "0"))) {
-            projects.add(new CRProject());
+            projects.add(new Set10Project());
         } else {
-            projects.add(new ClaimProject());
+            ClaimProject claimProject = new ClaimProject();
+            projects.add(claimProject::getProblems);
+            projects.add(claimProject::getClaimPerEquip);
             projects.add(new Set5Project());
             projects.add(new Set10Project());
             projects.add(new CRProject());
@@ -106,7 +108,7 @@ public class JiraTask {
                 log.error("InterruptedException: " + e1.getMessage(), e1);
             }
         } else {
-            for (Project project : projects) {
+            for (ProjectTask project : projects) {
                 try {
                     project.handleTasks();
                 } catch (Throwable e) {
