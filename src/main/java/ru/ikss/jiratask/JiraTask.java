@@ -52,6 +52,7 @@ public class JiraTask {
             ClaimProject claimProject = new ClaimProject();
             projects.add(claimProject::getProblems);
             projects.add(claimProject::getClaimPerEquip);
+            projects.add(claimProject::getClaimsByFilters);
             projects.add(new Set5Project());
             projects.add(new Set10Project());
             projects.add(new CRProject());

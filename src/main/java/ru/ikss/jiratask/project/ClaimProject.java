@@ -31,8 +31,11 @@ public class ClaimProject {
     private static final Logger log = LoggerFactory.getLogger(ClaimProject.class);
     private static final String GET_TIME_PROBLEMS = "select ProblemsGetLastActionInfoDate()";
     private static final String GET_TIME_PER_EQUIP = "select date_begin, date_end from ClaimPerEquipGetDates()";
+    private static final String GET_TIME_BY_FILTERS = "select date_begin, date_end from ClaimGetDates()";
     private static final String INSERT_PROBLEMS = "select InsertProblems(?)";
     private static final String INSERT_PER_EQUIP = "select InsertClaimPerEquip(?)";
+    private static final String INSERT_BY_FILTERS = "select InsertClaims(?)";
+
     private static final String UTF_8 = "UTF-8";
     private String logonUrl;
     private String httpUrl;
@@ -97,6 +100,33 @@ public class ClaimProject {
             retrieveData(cookies, url, INSERT_PER_EQUIP);
         } catch (Exception e) {
             log.error(this + "Error on handling Claim Per Equip: " + e.getMessage(), e);
+        }
+    }
+
+    public void getClaimsByFilters() {
+        log.trace("Handle Claims By Filters");
+        try {
+            DateTimeFormatter datePattern = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
+            String from = null;
+            String to = null;
+            try (Statement st = DAO.I.getConnection().createStatement(); ResultSet rs = st.executeQuery(GET_TIME_BY_FILTERS)) {
+                if (rs.next()) {
+                    from = new DateTime(rs.getTimestamp(1)).toString(datePattern);
+                    to = new DateTime(rs.getTimestamp(2)).toString(datePattern);
+                }
+            }
+            List<String> cookies = new ArrayList<>();
+            String answer = open(new URL(logonUrl), cookies);
+            log.trace(answer);
+
+            String url =
+                    httpUrl + "/GetClaimsByFilters" + "?" +
+                        "fm=" + URLEncoder.encode(from, UTF_8) +
+                        "&to=" + URLEncoder.encode(to, UTF_8) +
+                        "&compID=" + Config.getInstance().getValue("claim.compID", "-1");
+            retrieveData(cookies, url, INSERT_BY_FILTERS);
+        } catch (Exception e) {
+            log.error(this + "Error on handling Claims By Filters: " + e.getMessage(), e);
         }
     }
 
