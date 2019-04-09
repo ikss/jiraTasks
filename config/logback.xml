@@ -21,6 +21,7 @@
         </encoder>
     </appender>
     <logger name="com.atlassian.jira.rest.client.internal.async.AsynchronousHttpClientFactory$MavenUtils" level="OFF" />
+    <logger name="com.atlassian.httpclient.apache.httpcomponents.cache" level="OFF" />
     <root level="TRACE">
         <appender-ref ref="fileAppender" />
         <appender-ref ref="STDOUT" />
