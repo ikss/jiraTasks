@@ -9,6 +9,7 @@ import java.sql.Types;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringJoiner;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -33,8 +34,8 @@ import ru.ikss.jiratask.jira.JiraClient;
 public class Set10Project extends Project {
 
     private static final Logger log = LoggerFactory.getLogger(Set10Project.class);
-    private static final String INSERT_DATA = "select set10TaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE_DATA = "select set10TaskUpdate(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String INSERT_DATA = "select set10TaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_DATA = "select set10TaskUpdate(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String INSERT_WORKLOG = "select set10WorkLogInsert(?, ?, ?, ?, ?, ?)";
     private static final String CHANGE_JIRA_NUMBER = "select ChangeJira(?, ?)";
     private static final String GET_TIME = "select set10GetLastTaskDate()";
@@ -144,6 +145,9 @@ public class Set10Project extends Project {
             st.setNull(21, Types.VARCHAR);
         }
         st.setString(22, IssueHelper.getValueFromFieldByKey(issue, "customfield_13911", "value"));
+        StringJoiner sj = new StringJoiner(",");
+        issue.getComponents().forEach(c -> sj.add(c.getName()));
+        st.setString(23, sj.toString());
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
@@ -184,6 +188,9 @@ public class Set10Project extends Project {
             st.setNull(16, Types.INTEGER);
         }
         st.setString(17, IssueHelper.getValueFromFieldByKey(issue, "customfield_13911", "value"));
+        StringJoiner sj = new StringJoiner(",");
+        issue.getComponents().forEach(c -> sj.add(c.getName()));
+        st.setString(18, sj.toString());
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
