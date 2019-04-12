@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpServer;
 
+import ru.ikss.jiratask.git.Github;
 import ru.ikss.jiratask.project.COPProject;
 import ru.ikss.jiratask.project.CRProject;
 import ru.ikss.jiratask.project.ClaimProject;
@@ -47,8 +48,10 @@ public class JiraTask {
         log.debug("Execute with delay = {}", delay);
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         if ("1".equals(Config.getInstance().getValue("test", "0"))) {
-            projects.add(new Set10Project());
+            // projects.add(new Set10Project());
+            projects.add(new Github()::getPullRequestInfo);
         } else {
+            projects.add(new Github()::getPullRequestInfo);
             ClaimProject claimProject = new ClaimProject();
             projects.add(claimProject::getProblems);
             projects.add(claimProject::getClaimPerEquip);

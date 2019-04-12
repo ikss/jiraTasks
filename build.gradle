@@ -43,4 +43,7 @@ dependencies {
     compile "com.atlassian.jira:jira-rest-java-client-core:5.0.4"
     compile "com.atlassian.fugue:fugue:2.6.1"
     compile 'joda-time:joda-time:2.+'
+    compile 'org.eclipse.mylyn.github:org.eclipse.egit.github.core:2.1.5'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.9.3'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.3'
 }
