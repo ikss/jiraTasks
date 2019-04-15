@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  */
 public class JsonMapper {
 
-    public static final String DATETIME_MASK = "dd.MM.yyyy HH:mm:ss.SSS";
+    public static final String DATETIME_MASK = "yyyy-MM-dd'T'HH:mm:ss";
     private static Map<String, JsonMapper> instances = new ConcurrentHashMap<>();
     private ObjectMapper objectMapper;
     private boolean prettyPrint;
