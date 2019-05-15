@@ -29,8 +29,8 @@ public class CRProject extends Project {
 
     private static final Logger log = LoggerFactory.getLogger(CRProject.class);
     private static final String INSERT_DATA =
-            "select CRTaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE_DATA = "select CRTaskUpdate(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            "select CRTaskInsert(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_DATA = "select CRTaskUpdate(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String INSERT_WORKLOG = "select CRWorkLogInsert(?, ?, ?, ?)";
     private static final String JQL = Config.getInstance().getValue("jira.jqlCR");
     private static final String GET_TIME = "select CRGetLastTaskDate()";
@@ -85,6 +85,7 @@ public class CRProject extends Project {
         st.setString(12, IssueHelper.getValueFromFieldByKey(issue, "customfield_13924", "name")); // Аналитик
         st.setString(13, IssueHelper.getValueFromFieldByKey(issue, "customfield_13925", "value")); // Майка аналитики
         st.setString(14, IssueHelper.getValueFromFieldByKey(issue, "customfield_13902", "value")); // План аналитики
+        st.setString(15, IssueHelper.getValueFromFieldByKey(issue, "customfield_13946", "value")); // План разработки
 
         log.debug("query: '{}'", st.toString());
         st.execute();
@@ -136,6 +137,7 @@ public class CRProject extends Project {
         st.setString(26, IssueHelper.getValueFromFieldByKey(issue, "customfield_13924", "name")); // Аналитик
         st.setString(27, IssueHelper.getValueFromFieldByKey(issue, "customfield_13925", "value")); // Майка аналитики
         st.setString(28, IssueHelper.getValueFromFieldByKey(issue, "customfield_13902", "value")); // План аналитики
+        st.setString(29, IssueHelper.getValueFromFieldByKey(issue, "customfield_13946", "value")); // План разработки
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
@@ -173,6 +175,7 @@ public class CRProject extends Project {
         st.setString(26, IssueHelper.getValueFromFieldByKey(issue, "customfield_13924", "name")); // Аналитик
         st.setString(27, IssueHelper.getValueFromFieldByKey(issue, "customfield_13925", "value")); // Майка аналитики
         st.setString(28, IssueHelper.getValueFromFieldByKey(issue, "customfield_13902", "value")); // План аналитики
+        st.setString(29, IssueHelper.getValueFromFieldByKey(issue, "customfield_13946", "value")); // План разработки
         log.debug("query: '{}'", st.toString());
         st.execute();
     }
