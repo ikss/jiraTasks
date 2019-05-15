@@ -151,7 +151,7 @@ public class ClaimProject {
         connection.addRequestProperty("Cookie", cookies.stream().map(c -> c.split("~", 2)[0]).collect(Collectors.joining(";")));
 
         try (InputStream content = connection.getInputStream();
-                BufferedReader in = new BufferedReader(new InputStreamReader(content, "utf-8"))) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(content, UTF_8))) {
             StringBuilder xml = new StringBuilder();
             String line;
             while ((line = in.readLine()) != null) {
@@ -167,7 +167,7 @@ public class ClaimProject {
             log.error(this + e.getMessage(), e);
             try (InputStream content = connection.getErrorStream()) {
                 if (content != null) {
-                    try (BufferedReader in = new BufferedReader(new InputStreamReader(content, "utf-8"))) {
+                    try (BufferedReader in = new BufferedReader(new InputStreamReader(content, UTF_8))) {
                         String line;
                         while ((line = in.readLine()) != null) {
                             log.error(line);

@@ -24,6 +24,7 @@ import ru.ikss.jiratask.git.Github;
 import ru.ikss.jiratask.project.COPProject;
 import ru.ikss.jiratask.project.CRProject;
 import ru.ikss.jiratask.project.ClaimProject;
+import ru.ikss.jiratask.project.HdProject;
 import ru.ikss.jiratask.project.LSNProject;
 import ru.ikss.jiratask.project.MachineProject;
 import ru.ikss.jiratask.project.ProjectTask;
@@ -43,13 +44,14 @@ public class JiraTask {
     private static List<ProjectTask> projects = new ArrayList<>();
 
     public static void main(String[] args) {
-        Integer delay = Integer.valueOf(Config.getInstance().getValue("delay", "60"));
+        Integer delay = Config.getInstance().getInt("delay", 60);
         log.trace("------ Work started ------");
         log.debug("Execute with delay = {}", delay);
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         if ("1".equals(Config.getInstance().getValue("test", "0"))) {
-            // projects.add(new Set10Project());
-            projects.add(new Github()::getPullRequestInfo);
+            startHd();
+            // projects.add(new CRProject());
+            // projects.add(new Github()::getPullRequestInfo);
         } else {
             projects.add(new Github()::getPullRequestInfo);
             ClaimProject claimProject = new ClaimProject();
@@ -67,10 +69,11 @@ public class JiraTask {
             projects.add(new MachineProject());
             projects.add(new WalletProject());
             start1C();
+            startHd();
         }
         executor.scheduleWithFixedDelay(JiraTask::handleProjects, 0, delay, TimeUnit.MINUTES);
 
-        Integer sp = Integer.parseInt(Config.getInstance().getValue("WSPort", "0"));
+        Integer sp = Config.getInstance().getInt("WSPort", 0);
         if (sp > 0) {
             InetSocketAddress addr = new InetSocketAddress(sp);
             HttpServer server;
@@ -91,8 +94,14 @@ public class JiraTask {
 
     private static void start1C() {
         ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
-        Integer delay = Integer.valueOf(Config.getInstance().getValue("1C.delay", "60"));
+        Integer delay = Config.getInstance().getInt("1C.delay", 60);
         pool.scheduleWithFixedDelay(_1C::process, 0, delay, TimeUnit.MINUTES);
+    }
+
+    private static void startHd() {
+        ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
+        Integer delay = Config.getInstance().getInt("hd.delay", 4 * 60);
+        pool.scheduleWithFixedDelay(new HdProject()::getClientsVersion, 0, delay, TimeUnit.MINUTES);
     }
 
     private static void handleProjects() {
