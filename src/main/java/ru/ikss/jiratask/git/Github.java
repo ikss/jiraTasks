@@ -77,7 +77,9 @@ public class Github {
                 return jm.writeValue(pullRequest);
             }
         } catch (IOException e) {
-            log.error("Error on getInfo", e);
+            if (!e.getMessage().contains("404")) {
+                log.error("Error on getInfo", e);
+            }
         }
         return null;
     }
