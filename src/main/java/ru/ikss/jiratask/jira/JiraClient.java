@@ -25,5 +25,4 @@ public class JiraClient {
     public JiraRestClient getClient() {
         return factory.createWithBasicHttpAuthentication(SERVER_URI, LOGIN, PASSWORD);
     }
-
 }
